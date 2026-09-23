@@ -14,9 +14,10 @@ Dos accesos, los dos públicos y sin clave, comprobados en vivo:
    existencia de una providencia cuando el índice no la tiene todavía.
 
 Una cosa que hay que saber de la relatoría: para una sentencia que no existe
-NO devuelve un 404, sino un 200 con una página casi vacía (unas cien palabras
-de cabecera del sitio). Hay que reconocer esa página, o toda sentencia
-inventada pasaría por real.
+NO devuelve un 404, sino un 200 con una página vacía (desde septiembre de
+2026, la carcasa de la aplicación del sitio). Hay que reconocer esa página, o
+toda sentencia inventada pasaría por real. Y otra: las sentencias anuladas
+siguen en el índice; solo la relatoría lo dice.
 
 Formato de los identificadores en el índice, medido sobre las 29.474 filas:
 tipo + guion + número con ceros hasta tres cifras + barra + año con dos:
@@ -30,17 +31,17 @@ import json
 import os
 import re
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from .. import documentos
+from . import red
+from .red import CABECERA
 
 API_DATOS = "https://www.datos.gov.co/resource/v2k4-2t8s.json"
 RELATORIA = "https://www.corteconstitucional.gov.co/relatoria/{anio}/{archivo}.htm"
-CABECERA = {"User-Agent": "Cotejo/0.1 (verificacion de citas juridicas)"}
 
 # La Corte empezó a dictar sentencias en 1992: un año anterior en una cita
 # "T-..." es un error, o una referencia a la antigua Sala Constitucional de la
@@ -59,10 +60,7 @@ PAUSA_RELATORIA = float(os.environ.get("COTEJO_PAUSA", "1.5"))
 
 
 def _dir_cache() -> Path:
-    base = os.environ.get("COTEJO_CACHE")
-    ruta = Path(base) if base else Path(__file__).resolve().parents[2] / ".cache"
-    ruta.mkdir(parents=True, exist_ok=True)
-    return ruta
+    return red.dir_cache()
 
 
 # ----------------------------------------------------------------- modelo
@@ -219,67 +217,98 @@ class Indice:
 
 
 # --------------------------------------------------------------- relatoría
-_ultima_peticion = 0.0
 _PALABRAS_PAGINA_VACIA = 400    # la página de "no existe" tiene unas 105
 # Una ausencia se recuerda solo un día: una sentencia recién dictada puede
 # tardar en subirse a la relatoría, y no se la puede dar por inexistente
 # para siempre porque no estuviera el martes.
 _CADUCIDAD_AUSENCIA = 24 * 3600
 
-# Reintentos y cortacircuitos. Tras unas 800 peticiones en una tarde, el sitio
-# de la Corte dejó de responder a esta máquina —ni la portada—, cortando la
-# conexión TLS. Si eso le pasa a un abogado, pierde el acceso a la relatoría
-# por culpa de la herramienta. Así que: reintentar lo transitorio con espera
-# creciente, y si falla varias veces seguidas, DEJAR de insistir durante un
-# rato y marcar como «sin confirmar» lo que dependa de ella.
-_REINTENTOS = 3
-_FALLOS_PARA_CORTAR = 3
-_CORTE_SEGUNDOS = 15 * 60
-_fallos_seguidos = 0
-_cortado_hasta = 0.0
+# Pausa, reintentos y cortacircuitos: ver red.py, que nació de que este
+# servidor dejara de respondernos.
+cliente = red.Cliente("La relatoría de la Corte Constitucional", PAUSA_RELATORIA)
 
-
-class RelatoriaNoDisponible(Exception):
-    """La relatoría no responde; no quiere decir que la sentencia no exista."""
+# Nombre histórico: verificacion.py y las pruebas lo usan.
+RelatoriaNoDisponible = red.ServicioNoDisponible
 
 
 def relatoria_disponible() -> bool:
-    return time.time() >= _cortado_hasta
+    return cliente.disponible()
 
 
 def _descargar_pagina(url: str) -> bytes:
-    """GET con reintentos. Un 404 es una respuesta; un corte, un error."""
-    global _ultima_peticion, _fallos_seguidos, _cortado_hasta
-    if not relatoria_disponible():
-        raise RelatoriaNoDisponible(
-            "la relatoría dejó de responder hace poco; se espera antes de insistir")
+    return cliente.pedir(url)
 
-    ultimo: Exception | None = None
-    for intento in range(_REINTENTOS):
-        espera = PAUSA_RELATORIA * (2 ** intento) - (time.time() - _ultima_peticion)
-        if espera > 0:
-            time.sleep(espera)
-        _ultima_peticion = time.time()
-        try:
-            req = urllib.request.Request(url, headers=CABECERA)
-            with urllib.request.urlopen(req, timeout=60) as r:
-                datos = r.read()
-            _fallos_seguidos = 0
-            return datos
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404:
-                _fallos_seguidos = 0
-                return b""
-            if exc.code < 500 and exc.code != 429:
-                raise
-            ultimo = exc
-        except (urllib.error.URLError, ConnectionError, TimeoutError, OSError) as exc:
-            ultimo = exc
 
-    _fallos_seguidos += 1
-    if _fallos_seguidos >= _FALLOS_PARA_CORTAR:
-        _cortado_hasta = time.time() + _CORTE_SEGUNDOS
-    raise RelatoriaNoDisponible(f"{type(ultimo).__name__}: {ultimo}")
+# Canario. Una ausencia en la relatoría solo vale si la relatoría sigue
+# sirviendo sentencias. En septiembre de 2026 el sitio se rehízo y ahora
+# responde a cualquier dirección desconocida con la carcasa vacía de la
+# aplicación (200, sin texto). Si un día cambia el esquema de direcciones,
+# TODAS las consultas darían esa carcasa, y cada sentencia que aún no esté en
+# el índice saldría como «no existe». Así que antes de dar por buena una
+# ausencia se comprueba, como mucho una vez por hora, que una sentencia que
+# seguro existe se sigue pudiendo leer.
+CANARIO = ("T", "406", 1992)
+_CANARIO_VALIDEZ = 3600
+_canario_ok_hasta = 0.0
+
+
+def relatoria_fiable() -> bool:
+    global _canario_ok_hasta
+    if time.time() < _canario_ok_hasta:
+        return True
+    crudo = _descargar_pagina(url_relatoria(*CANARIO))
+    if _parece_la_sentencia(documentos._de_html(crudo) if crudo else "", CANARIO[0], CANARIO[1]):
+        _canario_ok_hasta = time.time() + _CANARIO_VALIDEZ
+        return True
+    return False
+
+
+# Sentencias anuladas. La relatoría no publica una lista: lo que hace es
+# sustituir la página de la sentencia por una NOTA DE RELATORÍA y mover el
+# texto a /relatoria/Anuladas/. Así está la SU-163/23 (anulada por el Auto 823
+# de 2024), que el índice oficial sigue listando como una sentencia más. Citar
+# una sentencia anulada como vigente es justo lo que un verificador tiene que
+# ver. Basta leer el principio de la página: se pide con Range.
+_RE_NOTA = re.compile(r"NOTA DE RELATOR[IÍ]A", re.IGNORECASE)
+_BYTES_CABECERA = 30_000
+# Una sentencia puede anularse un año después (la SU-163/23 lo fue en 2024)
+_CADUCIDAD_NOTA = 30 * 24 * 3600
+
+
+def _nota_de_nulidad_en(texto: str) -> str | None:
+    m = _RE_NOTA.search(texto[:6000])
+    if not m:
+        return None
+    nota = texto[m.end():m.end() + 900]
+    nota = re.split(r"REP[ÚU]BLICA DE COLOMBIA|Si desea conocer", nota, maxsplit=1)[0]
+    nota = " ".join(nota.split())
+    return nota if re.search(r"\bnulidad\b", nota, re.IGNORECASE) else None
+
+
+def nota_de_nulidad(tipo: str, numero: str, anio: int) -> str | None:
+    """La nota de la relatoría si la sentencia fue anulada; None si no.
+
+    Lanza RelatoriaNoDisponible si no se pudo preguntar.
+    """
+    carpeta = _dir_cache() / "relatoria" / "notas"
+    carpeta.mkdir(parents=True, exist_ok=True)
+    ruta = carpeta / f"{tipo.upper()}-{normalizar_numero(numero)}-{anio_completo(anio)}.json"
+    if ruta.exists() and time.time() - ruta.stat().st_mtime < _CADUCIDAD_NOTA:
+        return json.loads(ruta.read_text(encoding="utf-8"))["nota"]
+
+    nota = None
+    for url in urls_relatoria(tipo, numero, anio):
+        crudo = cliente.pedir(url, cabeceras={"Range": f"bytes=0-{_BYTES_CABECERA}"})
+        texto = documentos._de_html(crudo) if crudo else ""
+        if texto.strip():           # la carcasa vacía: probar la otra dirección
+            nota = _nota_de_nulidad_en(texto)
+            break
+    ruta.write_text(json.dumps({"nota": nota}, ensure_ascii=False), encoding="utf-8")
+    return nota
+
+
+def _url_anulada(url: str) -> str:
+    return re.sub(r"/relatoria/\d{4}/", "/relatoria/Anuladas/", url)
 
 
 def _ruta_texto(tipo: str, numero: str, anio: int) -> Path:
@@ -326,9 +355,17 @@ def texto_relatoria(tipo: str, numero: str, anio: int) -> str | None:
     for url in urls_relatoria(tipo, numero, anio):
         crudo = _descargar_pagina(url)
         candidato = documentos._de_html(crudo) if crudo else ""
+        if _nota_de_nulidad_en(candidato):
+            # Anulada: el texto sigue publicado, en otra carpeta
+            crudo = _descargar_pagina(_url_anulada(url))
+            candidato = documentos._de_html(crudo) if crudo else ""
         if _parece_la_sentencia(candidato, tipo, numero):
             texto = candidato
             break
+    if not texto and not relatoria_fiable():
+        raise RelatoriaNoDisponible(
+            "la relatoría no devuelve ni una sentencia que seguro existe "
+            f"({CANARIO[0]}-{CANARIO[1]}/{CANARIO[2] % 100:02d}): puede haber cambiado de formato")
     # Se cachea también la ausencia, como cadena vacía, para no repetir
     with gzip.open(ruta, "wt", encoding="utf-8") as f:
         f.write(texto)

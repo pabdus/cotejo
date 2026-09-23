@@ -150,7 +150,7 @@ iframe{width:100%;min-height:70vh;border:1px solid var(--linea);border-radius:6p
       $("informe").srcdoc = d.html;
       $("resultado").hidden = false;
       const s = d.resumen;
-      const atencion = s.no_existe + s.con_observaciones + s.sin_confirmar;
+      const atencion = s.no_existe + s.no_encontrada + s.con_observaciones + s.sin_confirmar;
       avisar(atencion
         ? `${atencion} cita(s) requieren atención de ${d.hallazgos.length}.`
         : `Sin problemas en ${d.hallazgos.length} cita(s).`);

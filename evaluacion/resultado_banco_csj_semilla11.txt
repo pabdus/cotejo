@@ -1,0 +1,30 @@
+Banco Corte Suprema — semilla 11
+35 documentos semilla, 63 códigos citados, 63 buscados
+
+Total: encontrada 60, ausente 3
+
+Por década/año
+            2014: 3/3 encontradas
+            2015: 5/6 encontradas, 1 ausentes
+            2016: 7/8 encontradas, 1 ausentes
+            2017: 12/12 encontradas
+            2018: 3/3 encontradas
+            2019: 7/7 encontradas
+            2020: 5/5 encontradas
+            2021: 4/4 encontradas
+            2022: 8/9 encontradas, 1 ausentes
+            2023: 4/4 encontradas
+            2024: 2/2 encontradas
+
+Por prefijo
+              AC: 26/28 encontradas, 2 ausentes
+              AL: 10/11 encontradas, 1 ausentes
+              AP: 10/10 encontradas
+              SC: 4/4 encontradas
+              SP: 1/1 encontradas
+             STP: 9/9 encontradas
+
+Ausentes (citadas por la propia Corte y no encontradas):
+  AC7390-2016      ausente      citada en AC3255-2018
+  AL481-2022       ausente      citada en AL1592-2023
+  AC258-2015       ausente      citada en AC3787-2016

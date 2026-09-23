@@ -3,13 +3,12 @@ ESCRITOS DE LLM — 15 escritos, 68 sentencias de la Corte Constitucional
 ========================================================================
   verificada              3   (4 %)
   con_observaciones       7   (10 %)
-  no_existe              32   (47 %)
-  sin_confirmar          26   (38 %)
+  no_existe              58   (85 %)
 
-  ponente equivocado: 0
-  pasajes entre comillas comprobados: 0
+  ponente equivocado: 1
+  pasajes entre comillas comprobados: 7
       coincide        0   (0 %)
       difiere         0   (0 %)
-      no_aparece      0   (0 %)
+      no_aparece      7   (100 %)
 
 Detalle para auditar a mano: C:\dev\Cotejo\evaluacion\resultado_escritos_llm.json

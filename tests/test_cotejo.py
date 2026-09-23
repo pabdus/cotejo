@@ -23,11 +23,28 @@ sys.path.insert(0, str(RAIZ))
 
 from cotejo import comparacion, extraccion, informe, verificacion   # noqa: E402
 from cotejo.fuentes import corte_constitucional as cc               # noqa: E402
+from cotejo.fuentes import corte_suprema as cs                      # noqa: E402
+from cotejo.fuentes import red                                      # noqa: E402
 from cotejo.verificacion import Estado                               # noqa: E402
 
 
 def claves(texto: str) -> list[str]:
     return [c.clave for c in extraccion.extraer(texto)]
+
+
+# Comprobar si una sentencia fue anulada es una petición a la relatoría por
+# cada sentencia verificada. Ninguna prueba sin red debe hacerla sin querer:
+# se anula para todo el módulo y las pruebas que la necesitan la simulan.
+_nota_de_nulidad_real = cc.nota_de_nulidad
+_parche_nulidad = mock.patch.object(cc, "nota_de_nulidad", return_value=None)
+
+
+def setUpModule():
+    _parche_nulidad.start()
+
+
+def tearDownModule():
+    _parche_nulidad.stop()
 
 
 # ============================================================ extracción
@@ -75,7 +92,8 @@ class TestExtraccion(unittest.TestCase):
                  "Consejo de Estado, Sección Tercera, sentencia de 12 de marzo de 2015.")
         citas = extraccion.extraer(texto)
         self.assertEqual(len(citas), 5)
-        self.assertTrue(all(not c.verificable for c in citas))
+        # Los códigos de la Corte Suprema ya se verifican; el resto, no
+        self.assertTrue(all(c.verificable == (c.clase == "codigo") for c in citas))
         self.assertEqual({c.clase for c in citas}, {"codigo", "radicado", "auto", "mencion"})
 
     def test_ponente(self):
@@ -295,7 +313,7 @@ class TestVerificacion(unittest.TestCase):
         self.assertIn("«también»", h.observaciones[0])
 
     def test_otras_fuentes_quedan_como_no_verificables(self):
-        inf = self.verificar("Según el AC739-2026.")
+        inf = self.verificar("Según el Consejo de Estado, en sentencia del 3 de marzo de 2020.")
         self.assertEqual(inf.hallazgos[0].estado, Estado.NO_VERIFICABLE)
 
     def test_citas_repetidas_se_agrupan(self):
@@ -349,15 +367,14 @@ class TestRelatoriaCaida(unittest.TestCase):
     """El sitio de la Corte cortó la conexión a esta máquina tras ~800 peticiones."""
 
     def setUp(self):
-        self._orig = (cc._fallos_seguidos, cc._cortado_hasta)
-        cc._fallos_seguidos, cc._cortado_hasta = 0, 0.0
+        cc.cliente.reiniciar()
         self.tmp = Path(__file__).resolve().parents[1] / ".cache" / "pruebas"
         self.env = mock.patch.dict(os.environ, {"COTEJO_CACHE": str(self.tmp)})
         self.env.start()
 
     def tearDown(self):
         self.env.stop()
-        cc._fallos_seguidos, cc._cortado_hasta = self._orig
+        cc.cliente.reiniciar()
         import shutil
         shutil.rmtree(self.tmp, ignore_errors=True)
 
@@ -389,6 +406,251 @@ class TestRelatoriaCaida(unittest.TestCase):
         h = inf.hallazgos[0]
         self.assertEqual(h.estado, Estado.SIN_CONFIRMAR)
         self.assertIn("2010-09-23", h.motivo, "dice hasta dónde llega el índice")
+
+    def test_si_la_relatoria_cambia_de_formato_no_sale_no_existe(self):
+        """El sitio se rehízo en 2026: lo desconocido devuelve la carcasa vacía.
+
+        Si cambiara el esquema de direcciones, TODO devolvería esa carcasa. El
+        canario lo detecta porque tampoco sale la T-406/92.
+        """
+        carcasa = b"<html><head><title>CORTE CONSTITUCIONAL</title></head><body></body></html>"
+        cc._canario_ok_hasta = 0.0
+        with mock.patch.object(cc, "_descargar_pagina", return_value=carcasa):
+            with self.assertRaises(cc.RelatoriaNoDisponible):
+                cc.texto_relatoria("T", "999", 2019)
+            inf = verificacion.verificar("Sentencia T-998 de 2019.", indice=cc.Indice(FILAS))
+        self.assertEqual(inf.hallazgos[0].estado, Estado.SIN_CONFIRMAR)
+
+    def test_con_el_canario_vivo_la_ausencia_vale(self):
+        sentencia = ("Sentencia T-406/92 " + "texto " * 600).encode()
+
+        def pagina(url):
+            return sentencia if "T-406-92" in url else b"<html></html>"
+        cc._canario_ok_hasta = 0.0
+        with mock.patch.object(cc, "_descargar_pagina", side_effect=pagina):
+            self.assertIsNone(cc.texto_relatoria("T", "999", 2019))
+
+
+NOTA_SU163 = (
+    "SU163-23\n\nNOTA DE RELATORÍA\n\nMediante Auto 823 de 2 de mayo de 2024, la Sala Plena "
+    "de la Corte Constitucional declaró la nulidad de oficio de la Sentencia SU-163 de 2023, "
+    "por violación del debido proceso al constatar una indebida conformación del juez natural."
+    "\n\nREPÚBLICA DE COLOMBIA\n\nCORTE CONSTITUCIONAL\n\nSENTENCIA SU-163 de 2023\n\n"
+    "Si desea conocer el texto de la providencia anulada ingrese a la siguiente URL: ..."
+)
+
+
+class TestNulidad(unittest.TestCase):
+    """La SU-163/23 fue anulada en 2024 y el índice oficial la sigue listando."""
+
+    def test_lee_la_nota(self):
+        nota = cc._nota_de_nulidad_en(NOTA_SU163)
+        self.assertIn("Auto 823", nota)
+        self.assertNotIn("REPÚBLICA", nota)
+
+    def test_una_sentencia_normal_no_tiene_nota(self):
+        self.assertIsNone(cc._nota_de_nulidad_en(SENTENCIA * 20))
+
+    def test_una_nota_que_no_es_de_nulidad_no_cuenta(self):
+        self.assertIsNone(cc._nota_de_nulidad_en(
+            "NOTA DE RELATORÍA\nMediante Auto 100 de 2020 se corrigió un error de digitación."))
+
+    def test_el_informe_la_marca(self):
+        with mock.patch.object(cc, "nota_de_nulidad", return_value="Mediante Auto 823 de 2024…"):
+            inf = verificacion.verificar("Sentencia T-760 de 2008.", indice=cc.Indice(FILAS))
+        h = inf.hallazgos[0]
+        self.assertEqual(h.estado, Estado.CON_OBSERVACIONES)
+        self.assertIn("ANULADA", h.observaciones[0])
+
+    def test_el_texto_de_la_anulada_se_busca_en_anuladas(self):
+        tmp = Path(__file__).resolve().parents[1] / ".cache" / "pruebas_nulidad"
+        texto = ("SENTENCIA SU-163 de 2023 " + "texto " * 600).encode()
+
+        def pagina(url):
+            return texto if "/Anuladas/" in url else NOTA_SU163.encode()
+        with mock.patch.dict(os.environ, {"COTEJO_CACHE": str(tmp)}), \
+                mock.patch.object(cc, "_descargar_pagina", side_effect=pagina):
+            t = cc.texto_relatoria("SU", "163", 2023)
+        import shutil
+        shutil.rmtree(tmp, ignore_errors=True)
+        self.assertIsNotNone(t)
+        self.assertIn("SU-163", t)
+
+
+# ========================================================== Corte Suprema
+def _fila(titulo, doctor="Dra. Margarita Cabello Blanco", clase="SENTENCIA"):
+    return {"title": titulo, "onlinePath": f"/var/www/html/Index/CIVIL/2018/{doctor}/{titulo}",
+            "doctor": doctor, "ano": 2018, "autoSentencia": clase}
+
+
+class TestExtraccionCSJ(unittest.TestCase):
+    def test_codigos_verificables(self):
+        c = extraccion.extraer("Así lo dijo la Corte en SC5686-2018.")[0]
+        self.assertEqual(c.tribunal, extraccion.CORTE_SUPREMA)
+        self.assertTrue(c.verificable)
+        self.assertEqual(c.clave, "SC5686-2018")
+
+    def test_formas(self):
+        self.assertEqual(claves("CSJ SL1234 de 2019"), ["SL1234-2019"])
+        self.assertEqual(claves("la STC-15558-2021"), ["STC15558-2021"])
+        self.assertEqual(claves("AC 739 – 2026"), ["AC739-2026"])
+
+    def test_al_en_mayusculas_no_es_un_auto_laboral(self):
+        self.assertEqual(claves("CONFORME AL 15 DE 2019 SE DECIDIÓ"), [])
+        self.assertEqual(claves("el AL15 de 2019"), ["AL15-2019"])
+
+    def test_ceros_delante_son_la_misma(self):
+        inf = extraccion.extraer("SP022-2019 y luego SP22-2019")
+        self.assertEqual({c.clave for c in inf}, {"SP22-2019"})
+
+    def test_no_se_confunde_con_la_constitucional(self):
+        """«SC-5686» no es la C-5686 de la Constitucional."""
+        self.assertEqual(claves("la SC-5686-2018"), ["SC5686-2018"])
+
+
+class TestFuenteCSJ(unittest.TestCase):
+    def test_titulos(self):
+        self.assertTrue(cs._patron_titulo("SP", "22", 2019).match("SP022-2019(47228).doc"))
+        self.assertTrue(cs._patron_titulo("SC", "5686", 2018).match("SC5686-2018 [2004-00042-01].pdf"))
+        self.assertFalse(cs._patron_titulo("SC", "5686", 2018).match("SC56860-2018.pdf"))
+        self.assertFalse(cs._patron_titulo("SC", "5686", 2018).match("STC5686-2018.pdf"))
+        self.assertFalse(cs._patron_titulo("SC", "5686", 2018).match("AC2333-2024 [SC5686-2018].pdf"),
+                         "el código tiene que abrir el título, no aparecer dentro")
+
+    def test_ponente(self):
+        self.assertEqual(cs.limpiar_ponente("Dra. Margarita Cabello Blanco"), "Margarita Cabello Blanco")
+        self.assertEqual(cs.limpiar_ponente("Dr.Omar Angel Mejia Amador"), "Omar Angel Mejia Amador")
+        self.assertIsNone(cs.limpiar_ponente("Conjueces"))
+        self.assertIsNone(cs.limpiar_ponente(None))
+
+    def test_se_prefiere_word_a_pdf(self):
+        rutas = ["a.pdf", "a.doc", "a.docx"]
+        self.assertEqual(sorted(rutas, key=cs._preferencia), ["a.docx", "a.doc", "a.pdf"])
+
+    def test_variantes_incluyen_la_forma_con_espacios(self):
+        """El AP7408-2015 se encabeza «AP – 7408 - 2015»: solo lo encuentra la frase."""
+        self.assertIn("AP 7408 2015", cs._variantes("AP", "7408", 2015))
+        self.assertIn("SP022-2019", cs._variantes("SP", "22", 2019))
+
+    def test_cobertura(self):
+        import datetime as dt
+        hoy = dt.date(2026, 9, 23)
+        self.assertTrue(cs.anio_cubierto(2025, hoy))
+        self.assertFalse(cs.anio_cubierto(2026, hoy))
+
+    def test_la_providencia_puede_estar_en_la_segunda_pagina(self):
+        """La búsqueda es de texto completo: las que la citan salen antes."""
+        paginas = {0: ([_fila(f"AC{i}-2019.doc") for i in range(10)], 12),
+                   10: ([_fila("SC5686-2018 [2004].doc"), _fila("AC1-2020.doc")], 12)}
+        with mock.patch.object(cs, "_buscar_pagina", side_effect=lambda t, s, a, i: paginas[i]):
+            b = cs._consultar("SC", "5686", 2018)
+        self.assertIsNotNone(b.providencia)
+        self.assertEqual(b.providencia.id, "SC5686-2018")
+        self.assertEqual(b.providencia.ponentes, ["Margarita Cabello Blanco"])
+
+    def test_la_muy_citada_se_busca_por_el_final(self):
+        """El AP2118-2020 salió en la posición 149 de 155: detrás de las que la citan."""
+        def pagina(t, s, a, inicio):
+            if inicio == 150:
+                return [_fila("AP3269-2020.doc"), _fila("AP2118-2020(34017).doc"),
+                        _fila("AP2118-2020(34017).pdf")], 153
+            return [_fila(f"AP{3000 + inicio + i}-2020.doc") for i in range(10)], 153
+        with mock.patch.object(cs, "_buscar_pagina", side_effect=pagina) as llamadas:
+            b = cs._consultar("AP", "2118", 2020)
+        self.assertEqual(b.providencia.id, "AP2118-2020")
+        self.assertLessEqual(llamadas.call_count, 2, "primera página y la última")
+
+    def test_version_partida_entre_dos_paginas(self):
+        def pagina(t, s, a, inicio):
+            if inicio == 10:
+                return [_fila("SC5686-2018.pdf")] + [_fila(f"AC{i}-2019.doc") for i in range(9)], 30
+            if inicio == 0:
+                return [_fila(f"AC{i}-2019.doc") for i in range(9)] + [_fila("SC5686-2018.doc")], 30
+            return [_fila(f"AC{i}-2020.doc") for i in range(10)], 30
+        with mock.patch.object(cs, "_buscar_pagina", side_effect=pagina):
+            b = cs._consultar("SC", "5686", 2018)
+        self.assertEqual(sorted(d.rsplit(".", 1)[-1] for d in b.providencia.documentos), ["doc", "pdf"])
+
+    def test_demasiados_resultados_no_es_ausencia(self):
+        llena = ([_fila(f"AC{i}-2019.doc") for i in range(10)], 500)
+        with mock.patch.object(cs, "_buscar_pagina", return_value=llena):
+            b = cs._consultar("SC", "5686", 2018)
+        self.assertIsNone(b.providencia)
+        self.assertFalse(b.completa)
+
+    def test_dos_ponentes_registrados(self):
+        """El STP11082-2021 figura bajo dos magistrados."""
+        filas = [_fila("STP11082-2021.doc", "Dr. Diego Eugenio Corredor Beltrán"),
+                 _fila("STP11082-2021.doc", "Dr. Eugenio Fernández Carlier"),
+                 _fila("STP11082-2021.pdf", None)]
+        p = cs._armar("STP", 2021, "TUTELAS", filas)
+        self.assertEqual(len(p.ponentes), 2)
+        self.assertTrue(verificacion.mismo_ponente("Eugenio Fernández Carlier", p.ponente))
+
+
+class TestVerificacionCSJ(unittest.TestCase):
+    PROV = cs.ProvidenciaCSJ(id="SC5686-2018", prefijo="SC", numero="5686", anio=2018,
+                             sala="CIVIL", clase="SENTENCIA",
+                             ponentes=["Margarita Cabello Blanco"], documentos=["x.doc"])
+
+    def verificar(self, texto, busqueda, texto_prov=None, fiable=True):
+        buscar = (mock.patch.object(cs, "buscar", side_effect=busqueda)
+                  if isinstance(busqueda, Exception)
+                  else mock.patch.object(cs, "buscar", return_value=busqueda))
+        with buscar, mock.patch.object(cs, "texto", return_value=texto_prov), \
+                mock.patch.object(cs, "buscador_fiable", return_value=fiable):
+            return verificacion.verificar(texto, indice=cc.Indice(FILAS))
+
+    def test_existente(self):
+        inf = self.verificar("La SC5686-2018 (M.P. Margarita Cabello Blanco).",
+                             cs.Busqueda(self.PROV, True, 2))
+        h = inf.hallazgos[0]
+        self.assertEqual(h.estado, Estado.VERIFICADA)
+        self.assertEqual(h.fuente, "corte_suprema")
+
+    def test_ponente_equivocado(self):
+        inf = self.verificar("La SC5686-2018 (M.P. Luis Armando Tolosa Villabona).",
+                             cs.Busqueda(self.PROV, True, 2))
+        self.assertEqual(inf.hallazgos[0].estado, Estado.CON_OBSERVACIONES)
+
+    def test_una_ausencia_nunca_es_no_existe(self):
+        """Al buscador le falta una de cada veinte providencias reales."""
+        inf = self.verificar("Según la SC9999-2018.", cs.Busqueda(None, True, 0))
+        h = inf.hallazgos[0]
+        self.assertEqual(h.estado, Estado.NO_ENCONTRADA)
+        self.assertIn(h, inf.problemas, "pide atención aunque no afirme que no existe")
+
+    def test_buscador_caido(self):
+        inf = self.verificar("Según la SC9999-2018.", red.ServicioNoDisponible("sin respuesta"))
+        self.assertEqual(inf.hallazgos[0].estado, Estado.SIN_CONFIRMAR)
+
+    def test_buscador_que_no_encuentra_ni_el_canario(self):
+        inf = self.verificar("Según la SC9999-2018.", cs.Busqueda(None, True, 0), fiable=False)
+        self.assertEqual(inf.hallazgos[0].estado, Estado.SIN_CONFIRMAR)
+
+    def test_busqueda_incompleta(self):
+        inf = self.verificar("Según la SC9999-2018.", cs.Busqueda(None, False, 500))
+        self.assertEqual(inf.hallazgos[0].estado, Estado.SIN_CONFIRMAR)
+
+    def test_pasaje_alterado(self):
+        texto = ("En la SC5686-2018 se afirmó: “El juez, en el Estado social de derecho no es "
+                 "un portador de la visión institucional del interés general.”")
+        inf = self.verificar(texto, cs.Busqueda(self.PROV, True, 2),
+                             texto_prov=cs.Texto(SENTENCIA, "x.doc"))
+        h = inf.hallazgos[0]
+        self.assertEqual(h.estado, Estado.CON_OBSERVACIONES)
+        self.assertIn("«no»", h.observaciones[0])
+
+    def test_con_texto_de_pdf_no_se_acusa_una_diferencia(self):
+        """El OCR de un PDF puede cambiar palabras: solo se cree lo que coincide."""
+        texto = ("En la SC5686-2018 se afirmó: “El juez, en el Estado social de derecho no es "
+                 "un portador de la visión institucional del interés general.”")
+        inf = self.verificar(texto, cs.Busqueda(self.PROV, True, 2),
+                             texto_prov=cs.Texto(SENTENCIA, "x.pdf"))
+        h = inf.hallazgos[0]
+        self.assertEqual(h.pasajes, [])
+        self.assertIn("PDF", h.observaciones[0])
+        self.assertNotIn("«no»", " ".join(h.observaciones))
 
 
 # =============================================================== informe
@@ -446,6 +708,26 @@ class TestFuenteReal(unittest.TestCase):
     def test_relatoria(self):
         self.assertIsNotNone(cc.texto_relatoria("T", "406", 1992))
         self.assertIsNone(cc.texto_relatoria("T", "999", 2019))
+
+    def test_sentencia_anulada(self):
+        self.assertIn("823", _nota_de_nulidad_real("SU", "163", 2023))
+        self.assertIsNone(_nota_de_nulidad_real("T", "406", 1992))
+
+    def test_corte_suprema(self):
+        b = cs.buscar("SC", "5686", 2018)
+        self.assertEqual(b.providencia.ponentes, ["Margarita Cabello Blanco"])
+        self.assertEqual(cs.buscar("SP", "22", 2019).providencia.id, "SP022-2019")
+        self.assertIsNotNone(cs.buscar("AP", "7408", 2015).providencia,
+                             "se encabeza «AP – 7408 - 2015»")
+        b = cs.buscar("SC", "99999", 2018)
+        self.assertIsNone(b.providencia)
+        self.assertTrue(b.completa)
+        self.assertTrue(cs.buscador_fiable())
+
+    def test_texto_corte_suprema(self):
+        t = cs.texto(cs.buscar("SC", "5686", 2018).providencia)
+        self.assertFalse(t.de_pdf)
+        self.assertIn("Magistrada ponente", t.texto[:500])
 
 
 if __name__ == "__main__":

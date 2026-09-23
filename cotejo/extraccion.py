@@ -8,13 +8,15 @@ Providencias de la Corte Constitucional en todas las formas habituales:
     sentencia No. C-355 de 2006      T-1025 de 2002    T-042A de 2025
     sentencias T-123, T-456 y T-789 de 2010     <- el año se comparte
 
+Providencias de la Corte Suprema por su código: SC5686-2018, AC739-2026,
+STC15558-2021, «SL1234 de 2019».
+
 Con su magistrado ponente si viene al lado ("M.P. Ciro Angarita Barón") y con
 las citas textuales entre comillas que se le atribuyen.
 
 Y detecta, sin poder verificarlas todavía, las citas de otras fuentes: autos de
-la Corte Constitucional, providencias de la Corte Suprema (SC5686-2018,
-AC739-2026...), radicados de 23 dígitos y menciones a sentencias por fecha del
-Consejo de Estado o la Corte Suprema. Se detectan para que el informe diga
+la Corte Constitucional, radicados de 23 dígitos y menciones a sentencias por
+fecha del Consejo de Estado o la Corte Suprema. Se detectan para que el informe diga
 claramente qué NO se ha comprobado. Un verificador que calla lo que no mira es
 peor que ninguno: el abogado cree que está todo revisado.
 
@@ -67,6 +69,9 @@ class Cita:
     @property
     def clave(self) -> str:
         """Identidad de la providencia, para agrupar citas repetidas."""
+        if self.tribunal == CORTE_SUPREMA and self.clase == "codigo":
+            # «SP022-2019» y «SP22-2019» son la misma: sin ceros delante
+            return f"{self.tipo}{int(self.numero)}-{self.anio}"
         if self.tipo and self.numero and self.anio:
             return f"{self.tipo}-{self.numero.upper()}/{self.anio}"
         return re.sub(r"\s+", " ", self.texto.strip())
@@ -100,11 +105,18 @@ _RE_AUTO = re.compile(
 
 # -------------------------------------------------------------- Corte Suprema
 # SC5686-2018, AC739-2026, STC1234-2021, SL1234-2019... Tipo de providencia,
-# número y año de cuatro cifras unidos por guion.
+# número y año de cuatro cifras, unidos por guion o por «de»: «SL1234 de 2019».
+# Con «de», el tipo y el número tienen que ir pegados: «AL» es una palabra, y
+# en un escrito en mayúsculas «CONFORME AL 15 DE 2019» no es una providencia.
 _RE_CODIGO_CSJ = re.compile(
-    r"\b(?P<codigo>SC|SP|SL|STC|STP|STL|STH|AC|AP|AL|ATC|ATP|ATL|AHP)\s?"
-    r"(?P<num>\d{1,5})\s?[-–]\s?(?P<anio>(?:19|20)\d{2})\b"
+    r"\b(?P<codigo>SC|SP|SL|STC|STP|STL|STH|AC|AP|AL|ATC|ATP|ATL|AHP)"
+    r"(?:\s?[-–]?\s?(?P<num>\d{1,5})\s?[-–]\s?|(?P<num_de>\d{1,5})\s+(?i:de(?:l\s+año)?)\s+)"
+    r"(?P<anio>(?:19|20)\d{2})\b"
 )
+
+
+def numero_csj(m: re.Match) -> str:
+    return m.group("num") or m.group("num_de")
 
 # Radicado de 23 dígitos: 11001-02-03-000-2019-01234-00
 _RE_RADICADO = re.compile(
@@ -279,8 +291,7 @@ def _otras(texto: str, ocupado: list[tuple[int, int]]) -> list[Cita]:
         if libre(m.start(), m.end()):
             citas.append(Cita(
                 CORTE_SUPREMA, "codigo", m.group(0), m.start(), m.end(),
-                tipo=m.group("codigo"), numero=m.group("num"), anio=int(m.group("anio")),
-                motivo_no_verificable="la Corte Suprema no publica un índice abierto consultable",
+                tipo=m.group("codigo"), numero=numero_csj(m), anio=int(m.group("anio")),
             ))
             ocupado.append((m.start(), m.end()))
     for m in _RE_RADICADO.finditer(texto):

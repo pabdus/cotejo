@@ -5,7 +5,7 @@
   "SU-214 de 2023",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s)."
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
@@ -14,7 +14,8 @@
   "SU-573 de 2019",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s)."
+   "El escrito atribuye la ponencia a Rodrigo del Corral; según el registro oficial fue Carlos Libardo Bernal Pulido.",
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
@@ -260,12 +261,12 @@
   "T-496 de 2018",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (RemoteDisconnected: Remote end closed connection without response)"
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
   "qwen3.5_9b_08.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-893 de 2017",
   [],
   []
@@ -276,26 +277,26 @@
   "T-466 de 2023",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
   "qwen3.5_9b_08.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-1305 de 2024",
   [],
   []
  ],
  [
   "qwen3.5_9b_09.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-2057 de 2018",
   [],
   []
  ],
  [
   "qwen3.5_9b_09.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-215 de 2023",
   [
    "SU-215/22"
@@ -304,14 +305,14 @@
  ],
  [
   "qwen3.5_9b_09.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-850 de 2017",
   [],
   []
  ],
  [
   "qwen3.5_9b_09.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-1267 de 2019",
   [],
   []
@@ -322,19 +323,19 @@
   "SU-388 de 2022",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
   "qwen3.5_9b_10.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-342 de 2016",
   [],
   []
  ],
  [
   "qwen3.5_9b_10.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-597 de 2018",
   [
    "T-597/16",
@@ -345,7 +346,7 @@
  ],
  [
   "qwen3.5_9b_10.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-1342 de 2017",
   [],
   []
@@ -359,7 +360,7 @@
  ],
  [
   "qwen3.5_9b_10.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-637 de 2019",
   [
    "T-637/17"
@@ -368,7 +369,7 @@
  ],
  [
   "qwen3.5_9b_11.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-214/09",
   [],
   []
@@ -379,19 +380,19 @@
   "T-684/12",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
   "qwen3.5_9b_11.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-213/08",
   [],
   []
  ],
  [
   "qwen3.5_9b_11.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-884/16",
   [
    "T-884/14"
@@ -400,56 +401,56 @@
  ],
  [
   "qwen3.5_9b_11.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-259/18",
   [],
   []
  ],
  [
   "qwen3.5_9b_12.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-2153 de 2016",
   [],
   []
  ],
  [
   "qwen3.5_9b_12.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-1506 de 2018",
   [],
   []
  ],
  [
   "qwen3.5_9b_12.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-045 de 2019",
   [],
   []
  ],
  [
   "qwen3.5_9b_12.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-2285 de 2017",
   [],
   []
  ],
  [
   "qwen3.5_9b_12.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-2106 de 2020",
   [],
   []
  ],
  [
   "qwen3.5_9b_13.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-215 de 2004",
   [],
   []
  ],
  [
   "qwen3.5_9b_13.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-218 de 2013",
   [],
   []
@@ -463,7 +464,7 @@
  ],
  [
   "qwen3.5_9b_14.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-1276 de 2016",
   [],
   []
@@ -474,12 +475,12 @@
   "SU-095 de 2018",
   [],
   [
-   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+   "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
   ]
  ],
  [
   "qwen3.5_9b_15.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-214 de 2021",
   [
    "SU-214/22",
@@ -489,7 +490,7 @@
  ],
  [
   "qwen3.5_9b_15.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-972 de 2013",
   [
    "T-972/11",
@@ -500,7 +501,7 @@
  ],
  [
   "qwen3.5_9b_15.txt",
-  "sin_confirmar",
+  "no_existe",
   "SU-219 de 2016",
   [],
   []
@@ -514,7 +515,7 @@
  ],
  [
   "qwen3.5_9b_15.txt",
-  "sin_confirmar",
+  "no_existe",
   "T-1325 de 2017",
   [],
   []

@@ -1,0 +1,27 @@
+Índice: 29474 providencias
+
+Descargando 60 sentencias de la relatoría (1 petición por segundo)...
+Elegidas por tipo: SU 60
+Descartadas: SU sin texto en la relatoría: 2, SU de más de 120.000 palabras: 2
+
+========================================================================
+PASAJES — 60 sentencias × 8 variantes
+========================================================================
+variante     esperado       coincide     difiere  no_aparece  sin_pasaje demasiado_c   acierto
+literal      coincide             60           0           0           0           0   100.0 %
+ruido        coincide             60           0           0           0           0   100.0 %
+elision      coincide             60           0           0           0           0   100.0 %
+negacion     difiere               0          60           0           0           0   100.0 %
+sustitucion  difiere               0          60           0           0           0   100.0 %
+omision      difiere               0          60           0           0           0   100.0 %
+cruzado      no_aparece            0           2          58           0           0    96.7 %
+barajado     no_aparece            0           0          58           2           0    96.7 %
+
+Acierto global: 476/480 (99.2 %)
+Alteraciones dadas por buenas (lo grave): 0
+
+Fallos, para mirarlos uno a uno:
+    ('cruzado', 'SU-082/95', 'difiere', 80.0, 'En mérito de lo expuesto, la Sala Plena de la Corte Constitucional, administrando justicia en nombre del pueblo y por au')
+    ('barajado', 'SU-111/20', 'sin_pasaje', None, 'en convivencia Constitución este como mecanismo pacífica”. derechos defensa papel derechos pacífica. los el convivencia ')
+    ('barajado', 'SU-712/13', 'sin_pasaje', None, 'del en de 49 Corte sentencia”. los la declarará Ley las razones, la 2002, esta por de Por anteriores analizados exequibi')
+    ('cruzado', 'SU-236/22', 'difiere', 72.7, 'Por la secretaría general de la Corte Constitucional, LÍBRENSE las comunicaciones de que trata el artículo 36 del Decret')

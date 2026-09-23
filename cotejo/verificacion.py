@@ -23,12 +23,17 @@ from rapidfuzz import fuzz
 from . import comparacion, extraccion
 from .extraccion import Cita
 from .fuentes import corte_constitucional as cc
+from .fuentes import corte_suprema as cs
 
 
 class Estado(str, Enum):
     VERIFICADA = "verificada"
     CON_OBSERVACIONES = "con_observaciones"
     NO_EXISTE = "no_existe"
+    # No está en una fuente que se sabe incompleta (el buscador de la Corte
+    # Suprema). Pide comprobación, pero no afirma que no exista: medido, a esa
+    # fuente le falta una de cada veinte providencias reales.
+    NO_ENCONTRADA = "no_encontrada"
     SIN_CONFIRMAR = "sin_confirmar"
     NO_VERIFICABLE = "no_verificable"
 
@@ -37,6 +42,7 @@ ETIQUETA = {
     Estado.VERIFICADA: "Verificada",
     Estado.CON_OBSERVACIONES: "Existe, con observaciones",
     Estado.NO_EXISTE: "No existe",
+    Estado.NO_ENCONTRADA: "No encontrada",
     Estado.SIN_CONFIRMAR: "Sin confirmar",
     Estado.NO_VERIFICABLE: "No verificable",
 }
@@ -48,8 +54,8 @@ class Hallazgo:
     clave: str
     estado: Estado
     citas: list[Cita]
-    providencia: cc.Providencia | None = None
-    fuente: str | None = None             # "indice" | "relatoria"
+    providencia: cc.Providencia | cs.ProvidenciaCSJ | None = None
+    fuente: str | None = None             # "indice" | "relatoria" | "corte_suprema"
     observaciones: list[str] = field(default_factory=list)
     pasajes: list[comparacion.ResultadoPasaje] = field(default_factory=list)
     posibles: list[cc.Providencia] = field(default_factory=list)
@@ -72,7 +78,7 @@ class Informe:
     @property
     def problemas(self) -> list[Hallazgo]:
         return [h for h in self.hallazgos
-                if h.estado in (Estado.NO_EXISTE, Estado.CON_OBSERVACIONES)]
+                if h.estado in (Estado.NO_EXISTE, Estado.NO_ENCONTRADA, Estado.CON_OBSERVACIONES)]
 
 
 # ------------------------------------------------------------------ ponentes
@@ -131,7 +137,7 @@ def _agrupar(citas: list[Cita]) -> dict[str, list[Cita]]:
 
 def _verificar_cc(clave: str, grupo: list[Cita], indice: cc.Indice,
                   relatoria: bool, pasajes: bool,
-                  cache_textos: dict) -> Hallazgo:
+                  cache_textos: dict, nulidad: bool = True) -> Hallazgo:
     c0 = grupo[0]
     prov = indice.buscar(c0.tipo, c0.numero, c0.anio)
     fuente = "indice" if prov else None
@@ -183,6 +189,17 @@ def _verificar_cc(clave: str, grupo: list[Cita], indice: cc.Indice,
 
     h = Hallazgo(clave, Estado.VERIFICADA, grupo, providencia=prov, fuente=fuente)
 
+    # -- ¿anulada? -------------------------------------------------------
+    # El índice oficial sigue listando las sentencias anuladas; solo la
+    # relatoría lo dice (ver cc.nota_de_nulidad).
+    if relatoria and nulidad:
+        try:
+            nota = cc.nota_de_nulidad(c0.tipo, c0.numero, c0.anio)
+        except Exception:
+            nota = None     # no se pudo mirar; lo demás sigue valiendo
+        if nota:
+            h.observaciones.append(f"La sentencia fue ANULADA. Nota de la relatoría: {nota}")
+
     # -- ponente ---------------------------------------------------------
     for c in grupo:
         if c.ponente:
@@ -204,35 +221,140 @@ def _verificar_cc(clave: str, grupo: list[Cita], indice: cc.Indice,
                 + (f" ({fallo_red})" if fallo_red else "")
             )
         else:
-            norm = cache_textos.get(("norm", clave))
-            if norm is None:
-                norm = comparacion.normalizar(texto_sent)
-                cache_textos[("norm", clave)] = norm
-            vistos = set()
-            for ct in todos:
-                if ct.texto in vistos:
-                    continue
-                vistos.add(ct.texto)
-                r = comparacion.buscar_pasaje(ct.texto, norm)
-                h.pasajes.append(r)
-                if r.estado == "no_aparece":
-                    h.observaciones.append(
-                        "Un pasaje entre comillas atribuido a esta sentencia no aparece en ella."
-                    )
-                elif r.estado == "difiere":
-                    h.observaciones.append(
-                        "Un pasaje entre comillas no coincide literalmente con la sentencia: "
-                        + describir_diferencias(r.diferencias) + "."
-                    )
+            _cotejar_pasajes(h, todos, texto_sent, clave, cache_textos)
 
     if h.observaciones:
         h.estado = Estado.CON_OBSERVACIONES
     return h
 
 
+def _cotejar_pasajes(h: Hallazgo, todos: list, texto_sent: str, clave: str,
+                     cache_textos: dict, fiable: bool = True) -> None:
+    """Busca cada pasaje citado en el texto de la providencia.
+
+    Con fiable=False (el texto sale del OCR de un PDF) solo se cree lo que
+    coincide: una palabra mal reconocida haría que un pasaje fiel pareciera
+    alterado, y eso es acusar al escrito de algo que no hizo.
+    """
+    norm = cache_textos.get(("norm", clave))
+    if norm is None:
+        norm = comparacion.normalizar(texto_sent)
+        cache_textos[("norm", clave)] = norm
+    vistos = set()
+    sin_comprobar = 0
+    for ct in todos:
+        if ct.texto in vistos:
+            continue
+        vistos.add(ct.texto)
+        r = comparacion.buscar_pasaje(ct.texto, norm)
+        if not fiable and r.estado != "coincide":
+            sin_comprobar += 1
+            continue
+        h.pasajes.append(r)
+        if r.estado == "no_aparece":
+            h.observaciones.append(
+                "Un pasaje entre comillas atribuido a esta providencia no aparece en ella."
+            )
+        elif r.estado == "difiere":
+            h.observaciones.append(
+                "Un pasaje entre comillas no coincide literalmente con la providencia: "
+                + describir_diferencias(r.diferencias) + "."
+            )
+    if sin_comprobar:
+        h.observaciones.append(
+            f"{sin_comprobar} pasaje(s) sin comprobar: la providencia solo está publicada "
+            "en PDF escaneado y su texto no es fiable para comparar palabra a palabra."
+        )
+
+
+# ---------------------------------------------------------- Corte Suprema
+def _verificar_csj(clave: str, grupo: list[Cita], consultar: bool, pasajes: bool,
+                   cache_textos: dict) -> Hallazgo:
+    c0 = grupo[0]
+    if c0.tipo not in cs.SALAS:
+        return Hallazgo(clave, Estado.NO_VERIFICABLE, grupo,
+                        motivo=f"el tipo de providencia {c0.tipo} de la Corte Suprema aún no se cubre")
+    if not consultar:
+        return Hallazgo(clave, Estado.SIN_CONFIRMAR, grupo,
+                        motivo="no se consultó el buscador de la Corte Suprema")
+    try:
+        b = cs.buscar(c0.tipo, c0.numero, c0.anio)
+    except Exception as exc:
+        return Hallazgo(clave, Estado.SIN_CONFIRMAR, grupo,
+                        motivo=f"el buscador de la Corte Suprema no respondió: {exc}")
+
+    if b.providencia is None:
+        return _ausencia_csj(clave, grupo, b)
+
+    prov = b.providencia
+    h = Hallazgo(clave, Estado.VERIFICADA, grupo, providencia=prov, fuente="corte_suprema")
+
+    for c in grupo:
+        if c.ponente:
+            if mismo_ponente(c.ponente, prov.ponente) is False:
+                h.observaciones.append(
+                    f"El escrito atribuye la ponencia a {c.ponente}; "
+                    f"según el registro de la Corte Suprema fue {prov.ponente}."
+                )
+
+    todos = [ct for c in grupo for ct in c.citas_textuales]
+    if todos and pasajes:
+        try:
+            t = cs.texto(prov)
+            fallo = None
+        except Exception as exc:
+            t, fallo = None, f"{type(exc).__name__}: {exc}"
+        if t is None:
+            h.observaciones.append(
+                "No se pudo obtener el texto de la providencia para comprobar "
+                f"{len(todos)} pasaje(s) citado(s)." + (f" ({fallo})" if fallo else ""))
+        else:
+            _cotejar_pasajes(h, todos, t.texto, clave, cache_textos, fiable=not t.de_pdf)
+
+    if h.observaciones:
+        h.estado = Estado.CON_OBSERVACIONES
+    return h
+
+
+def _ausencia_csj(clave: str, grupo: list[Cita], b: "cs.Busqueda") -> Hallazgo:
+    """Qué significa que el buscador no la encuentre.
+
+    Nunca «no existe»: la Corte Suprema no tiene una segunda fuente con la que
+    confirmar, y su buscador no tiene todo. En una muestra de 71 providencias
+    citadas por la propia Corte, tres reales no estaban (STC529-2016,
+    AC3390-2019, STC10418-2020). Declararlas inexistentes sería acusar en
+    falso a uno de cada veinte escritos correctos.
+    """
+    c0 = grupo[0]
+    if not b.completa:
+        return Hallazgo(clave, Estado.SIN_CONFIRMAR, grupo, motivo=(
+            f"el buscador de la Corte Suprema devolvió {b.total} documentos que la mencionan y "
+            "no se pudieron revisar todos"))
+    try:
+        fiable = cs.buscador_fiable()
+    except Exception:
+        fiable = False
+    if not fiable:
+        return Hallazgo(clave, Estado.SIN_CONFIRMAR, grupo, motivo=(
+            "no figura en el buscador de la Corte Suprema, pero el buscador tampoco encuentra "
+            "una providencia que seguro existe: puede estar fallando"))
+    if not cs.anio_cubierto(c0.anio):
+        return Hallazgo(clave, Estado.NO_ENCONTRADA, grupo, motivo=(
+            "no figura en el buscador de la Corte Suprema; la Corte sube sus providencias con "
+            f"meses de retraso y las de {c0.anio} aún no están todas. Compruébela antes de radicar"))
+    return Hallazgo(clave, Estado.NO_ENCONTRADA, grupo, motivo=(
+        "no figura en el buscador de providencias de la Corte Suprema. Ese buscador no tiene "
+        "todas las providencias (le falta alrededor de una de cada veinte), así que no se puede "
+        "afirmar que no exista, pero sí hay que comprobarla antes de radicar"))
+
+
 def verificar(texto: str, documento: str = "escrito", indice: cc.Indice | None = None,
-              relatoria: bool = True, pasajes: bool = True) -> Informe:
-    """Extrae y verifica todas las citas del texto."""
+              relatoria: bool = True, pasajes: bool = True, nulidad: bool = True) -> Informe:
+    """Extrae y verifica todas las citas del texto.
+
+    nulidad=False se salta la consulta de si cada sentencia fue anulada (una
+    petición por sentencia): solo para los bancos de evaluación.
+    """
     indice = indice if indice is not None else cc.Indice.cargar()
     citas = extraccion.extraer(texto)
     cache_textos: dict = {}
@@ -245,7 +367,9 @@ def verificar(texto: str, documento: str = "escrito", indice: cc.Indice | None =
                                       motivo=c0.motivo_no_verificable))
         elif c0.tribunal == extraccion.CORTE_CONSTITUCIONAL and c0.clase == "sentencia":
             hallazgos.append(_verificar_cc(clave, grupo, indice, relatoria,
-                                           pasajes, cache_textos))
+                                           pasajes, cache_textos, nulidad))
+        elif c0.tribunal == extraccion.CORTE_SUPREMA and c0.clase == "codigo":
+            hallazgos.append(_verificar_csj(clave, grupo, relatoria, pasajes, cache_textos))
         else:
             hallazgos.append(Hallazgo(clave, Estado.NO_VERIFICABLE, grupo,
                                       motivo="fuente todavía no cubierta"))

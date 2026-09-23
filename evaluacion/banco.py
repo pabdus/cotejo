@@ -103,7 +103,7 @@ def evaluar_existencia(indice: cc.Indice, casos, rng: random.Random) -> None:
     for i, (etiqueta, tipo, num, anio) in enumerate(casos, 1):
         cita = forma(tipo, num, anio, rng)
         frase = rng.choice(PLANTILLAS).format(c=cita)
-        inf = verificacion.verificar(frase, indice=indice, pasajes=False)
+        inf = verificacion.verificar(frase, indice=indice, pasajes=False, nulidad=False)
         verif = [h for h in inf.hallazgos if h.primera.tribunal == extraccion.CORTE_CONSTITUCIONAL]
         esperado = cc.id_oficial(tipo, num, anio)
         encontrado = [h for h in verif
@@ -213,23 +213,35 @@ ESPERADO = {"literal": "coincide", "ruido": "coincide", "elision": "coincide",
             "cruzado": "no_aparece", "barajado": "no_aparece"}
 
 
-def evaluar_pasajes(indice: cc.Indice, n: int, rng: random.Random) -> None:
+def evaluar_pasajes(indice: cc.Indice, n: int, rng: random.Random,
+                    tipos: tuple[str, ...] = cc.TIPOS) -> None:
     # Sentencias de tamaño manejable, de todas las épocas
-    ids = [i for i, p in indice._por_id.items() if p.anio >= 1995]
+    ids = [i for i, p in indice._por_id.items() if p.anio >= 1995 and p.tipo in tipos]
     elegidas, textos = [], {}
+    # Se cuenta lo que se descarta y por qué: durante la primera evaluación
+    # las SU se descartaron TODAS por no tener texto, y nadie lo vio.
+    descartes = Counter()
     print(f"Descargando {n} sentencias de la relatoría (1 petición por segundo)...")
-    for ident in rng.sample(ids, n * 3):
+    for ident in rng.sample(ids, min(len(ids), n * 3)):
         if len(elegidas) >= n:
             break
         p = indice._por_id[ident]
         t = cc.texto_relatoria(p.tipo, p.numero, p.anio)
-        if not t or len(t.split()) > 120_000:
+        if not t:
+            descartes[f"{p.tipo} sin texto en la relatoría"] += 1
+            continue
+        if len(t.split()) > 120_000:
+            descartes[f"{p.tipo} de más de 120.000 palabras"] += 1
             continue
         frs = frases_de(t)
         if len(frs) < 5:
+            descartes[f"{p.tipo} con menos de 5 frases utilizables"] += 1
             continue
         elegidas.append(p)
         textos[p.id] = (t, frs)
+    print("Elegidas por tipo: " + ", ".join(f"{k} {v}" for k, v in
+                                             Counter(p.tipo for p in elegidas).most_common()))
+    print("Descartadas: " + (", ".join(f"{k}: {v}" for k, v in descartes.most_common()) or "ninguna"))
 
     matriz = Counter()
     ejemplos_fallo = []
@@ -247,7 +259,7 @@ def evaluar_pasajes(indice: cc.Indice, n: int, rng: random.Random) -> None:
         for nombre, cita in variantes(frase, otra, vocab, rng).items():
             escrito = (f"En la Sentencia {p.tipo}-{p.numero.lstrip('0')} de {p.anio}, "
                        f"la Corte sostuvo: “{cita}”.")
-            inf = verificacion.verificar(escrito, indice=indice)
+            inf = verificacion.verificar(escrito, indice=indice, nulidad=False)
             h = inf.hallazgos[0]
             obtenido = h.pasajes[0].estado if h.pasajes else "sin_pasaje"
             matriz[(nombre, obtenido)] += 1
@@ -286,12 +298,13 @@ def main() -> None:
     ap.add_argument("--existencia", type=int, default=300)
     ap.add_argument("--pasajes", type=int, default=40)
     ap.add_argument("--semilla", type=int, default=7)
+    ap.add_argument("--tipos", default="T,C,SU", help="p. ej. SU para medir solo unificación")
     args = ap.parse_args()
     rng = random.Random(args.semilla)
     indice = cc.Indice.cargar()
     print(f"Índice: {len(indice)} providencias\n")
     if args.pasajes:
-        evaluar_pasajes(indice, args.pasajes, rng)
+        evaluar_pasajes(indice, args.pasajes, rng, tuple(args.tipos.split(",")))
     if args.existencia:
         print(f"\nPreparando {2 * args.existencia} casos de existencia...")
         casos = banco_existencia(indice, args.existencia, rng)

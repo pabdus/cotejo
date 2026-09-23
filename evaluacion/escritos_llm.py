@@ -113,7 +113,7 @@ def verificar() -> None:
     print("=" * 72)
     print(f"ESCRITOS DE LLM — {len(ficheros)} escritos, {n_cc} sentencias de la Corte Constitucional")
     print("=" * 72)
-    for e in ["verificada", "con_observaciones", "no_existe", "sin_confirmar", "no_verificable"]:
+    for e in ["verificada", "con_observaciones", "no_existe", "no_encontrada", "sin_confirmar", "no_verificable"]:
         if total[e]:
             print(f"  {e:<20} {total[e]:>4}   ({100 * total[e] / max(n_cc, 1):.0f} %)")
     if total["otra fuente"]:

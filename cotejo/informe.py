@@ -13,10 +13,12 @@ import html
 import json
 import re
 
+from .extraccion import CORTE_SUPREMA
+from .fuentes import corte_suprema as cs
 from .verificacion import ETIQUETA, Estado, Hallazgo, Informe
 
-ORDEN = [Estado.NO_EXISTE, Estado.CON_OBSERVACIONES, Estado.SIN_CONFIRMAR,
-         Estado.VERIFICADA, Estado.NO_VERIFICABLE]
+ORDEN = [Estado.NO_EXISTE, Estado.NO_ENCONTRADA, Estado.CON_OBSERVACIONES,
+         Estado.SIN_CONFIRMAR, Estado.VERIFICADA, Estado.NO_VERIFICABLE]
 
 
 def _ordenados(inf: Informe) -> list[Hallazgo]:
@@ -140,20 +142,20 @@ margin:0 0 30px}
 .cifra b{display:block;font:600 1.6rem/1.1 "IBM Plex Sans",system-ui,sans-serif;
 font-variant-numeric:tabular-nums}
 .cifra span{font:12px/1.3 "IBM Plex Sans",system-ui,sans-serif;color:var(--suave)}
-.cifra.no_existe b{color:var(--rojo)}.cifra.con_observaciones b{color:var(--ambar)}
+.cifra.no_existe b{color:var(--rojo)}.cifra.con_observaciones b,.cifra.no_encontrada b{color:var(--ambar)}
 .cifra.verificada b{color:var(--verde)}
 h2{font:600 13px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.12em;
 text-transform:uppercase;color:var(--suave);margin:34px 0 12px}
 .cita{background:var(--caja);border:1px solid var(--linea);border-left-width:4px;
 border-radius:4px;padding:14px 18px;margin:0 0 12px;break-inside:avoid}
-.cita.no_existe{border-left-color:var(--rojo)}.cita.con_observaciones{border-left-color:var(--ambar)}
+.cita.no_existe{border-left-color:var(--rojo)}.cita.con_observaciones,.cita.no_encontrada{border-left-color:var(--ambar)}
 .cita.verificada{border-left-color:var(--verde)}.cita.sin_confirmar,.cita.no_verificable{border-left-color:var(--gris)}
 .cab{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline}
 .cab strong{font-size:1.08rem}
 .chip{font:600 11px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:.06em;
 text-transform:uppercase;padding:4px 7px;border-radius:3px}
 .chip.no_existe{background:var(--rojo-f);color:var(--rojo)}
-.chip.con_observaciones{background:var(--ambar-f);color:var(--ambar)}
+.chip.con_observaciones,.chip.no_encontrada{background:var(--ambar-f);color:var(--ambar)}
 .chip.verificada{background:var(--verde-f);color:var(--verde)}
 .chip.sin_confirmar,.chip.no_verificable{background:var(--gris-f);color:var(--gris)}
 .datos{font:13px/1.5 "IBM Plex Sans",system-ui,sans-serif;color:var(--suave);margin-top:4px}
@@ -212,11 +214,16 @@ def _tarjeta(h: Hallazgo) -> str:
             datos.append(_E(p.fecha))
         if p.ponente:
             datos.append("M.P. " + _E(p.ponente))
-        datos.append(f'<a href="{_E(p.url)}">texto en la relatoría</a>')
+        enlace = ("texto en la Corte Suprema" if h.fuente == "corte_suprema"
+                  else "texto en la relatoría")
+        datos.append(f'<a href="{_E(p.url)}">{enlace}</a>')
         if h.fuente == "relatoria":
             datos.append("aún no figura en el índice oficial")
     elif c.tribunal:
         datos.append(_E(c.tribunal))
+        if c.tribunal == CORTE_SUPREMA and c.clase == "codigo" and c.tipo in cs.SALAS:
+            url = cs.url_busqueda(h.clave, cs.SALAS[c.tipo])
+            datos.append(f'<a href="{_E(url)}">buscarla en la Corte Suprema</a>')
     if datos:
         partes.append(f'<div class="datos">{" · ".join(datos)}</div>')
 
@@ -255,7 +262,8 @@ def _tarjeta(h: Hallazgo) -> str:
 def a_html(inf: Informe) -> str:
     fecha = dt.datetime.now().strftime("%d/%m/%Y %H:%M")
     grupos = [
-        ("Requieren atención", [Estado.NO_EXISTE, Estado.CON_OBSERVACIONES, Estado.SIN_CONFIRMAR]),
+        ("Requieren atención", [Estado.NO_EXISTE, Estado.NO_ENCONTRADA,
+                                Estado.CON_OBSERVACIONES, Estado.SIN_CONFIRMAR]),
         ("Verificadas", [Estado.VERIFICADA]),
         ("No verificadas en esta versión", [Estado.NO_VERIFICABLE]),
     ]
@@ -281,10 +289,11 @@ def a_html(inf: Informe) -> str:
 </header>
 <section class="resumen">{cifras}</section>
 {''.join(cuerpo)}
-<p class="nota">Cotejo contrasta cada cita con el índice oficial de providencias de la Corte
-Constitucional (datos.gov.co) y con el texto publicado en su relatoría. Una providencia solo se
-declara inexistente cuando falta en las dos fuentes. Los pasajes entre comillas se buscan en el
-texto completo de la sentencia, tolerando tildes, puntuación y elisiones. Este informe ayuda a
-cumplir el deber de verificación, pero no sustituye la lectura de las providencias por parte de
-quien firma el escrito.</p>
+<p class="nota">Cotejo contrasta cada cita de la Corte Constitucional con el índice oficial de
+providencias (datos.gov.co) y con el texto publicado en su relatoría; una providencia solo se
+declara inexistente cuando falta en las dos fuentes. Las de la Corte Suprema se buscan en su
+buscador de providencias, que no las tiene todas: lo que no aparece ahí se marca «no encontrada»,
+nunca «no existe». Los pasajes entre comillas se buscan en el texto completo de la providencia,
+tolerando tildes, puntuación y elisiones. Este informe ayuda a cumplir el deber de verificación,
+pero no sustituye la lectura de las providencias por parte de quien firma el escrito.</p>
 </main></body></html>"""
