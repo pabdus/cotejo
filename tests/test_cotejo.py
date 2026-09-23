@@ -99,6 +99,23 @@ class TestExtraccion(unittest.TestCase):
         c = extraccion.extraer(texto)[0]
         self.assertEqual(len(c.citas_textuales), 1)
 
+    def test_comillas_anidadas_del_mismo_signo(self):
+        """Antes el pasaje se cortaba en el primer cierre y lo de detrás no se miraba."""
+        texto = "“las prisiones implican que una celda, un “camastro”, sean absolutamente escasos”"
+        pasajes = extraccion.pasajes_entre_comillas(texto)
+        self.assertEqual(len(pasajes), 1)
+        self.assertTrue(pasajes[0][2].endswith("absolutamente escasos"))
+
+    def test_comillas_espanolas_con_inglesas_dentro(self):
+        texto = "«la Corte habló del llamado “mínimo vital” como garantía de subsistencia»"
+        pasajes = extraccion.pasajes_entre_comillas(texto)
+        self.assertEqual(len(pasajes), 1)
+        self.assertIn("garantía de subsistencia", pasajes[0][2])
+
+    def test_comillas_rectas(self):
+        pasajes = extraccion.pasajes_entre_comillas('dijo "uno dos tres cuatro cinco seis" y "otra cosa más larga aquí"')
+        self.assertEqual(len(pasajes), 2)
+
     def test_comillas_cortas_no_son_citas_textuales(self):
         c = extraccion.extraer("La T-406 de 1992 habla del “mínimo vital”.")[0]
         self.assertEqual(c.citas_textuales, [])

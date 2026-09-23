@@ -130,11 +130,45 @@ _RE_PONENTE = re.compile(
 _DISTANCIA_PONENTE = 160
 
 # --------------------------------------------------------------- comillas
-_RE_COMILLAS = re.compile(
-    r"“(?P<a>[^”]{20,}?)”|«(?P<b>[^»]{20,}?)»|\"(?P<c>[^\"]{20,}?)\"",
-    re.S,
-)
+# Las comillas se leen con un pequeño analizador y no con una expresión
+# regular, porque en un escrito jurídico se ANIDAN: «… “…” …», o “… “…” …”
+# con el mismo signo. Una expresión regular corta el pasaje en el primer
+# cierre, y todo lo que va detrás —justo donde puede estar la alteración— se
+# queda sin comprobar. Pasó con una cita de la T-847/00 que contenía
+# «un “camastro”».
+_ABREN = {"“": "”", "«": "»"}
+_CIERRAN = {"”": "“", "»": "«"}
 MIN_PALABRAS_CITA_TEXTUAL = 8
+
+
+def pasajes_entre_comillas(texto: str) -> list[tuple[int, int, str]]:
+    """(inicio, fin, contenido) de cada pasaje entre comillas de primer nivel.
+
+    Las comillas tipográficas llevan la cuenta del anidamiento. Las rectas no
+    distinguen apertura de cierre, así que solo se emparejan fuera de
+    cualquier comilla tipográfica, de dos en dos.
+    """
+    salida: list[tuple[int, int, str]] = []
+    pila: list[tuple[str, int]] = []
+    recta: int | None = None
+    for i, ch in enumerate(texto):
+        if ch in _ABREN and recta is None:
+            pila.append((ch, i))
+        elif ch in _CIERRAN and pila:
+            # Se cierra hasta la apertura que corresponde a este signo
+            while pila and pila[-1][0] != _CIERRAN[ch]:
+                pila.pop()
+            if pila:
+                _, ini = pila.pop()
+                if not pila:
+                    salida.append((ini, i + 1, texto[ini + 1:i]))
+        elif ch == '"' and not pila:
+            if recta is None:
+                recta = i
+            else:
+                salida.append((recta, i + 1, texto[recta + 1:i]))
+                recta = None
+    return [s for s in salida if len(s[2].strip()) >= 20]
 _ANTES_MAX = 700        # la cita suele anunciar el pasaje: "la Corte señaló: «…»"
 _DESPUES_MAX = 150      # o cerrarlo: "«…» (Sentencia T-406 de 1992)"
 _RE_SALTO_PARRAFO = re.compile(r"\n\s*\n")
@@ -262,20 +296,19 @@ def _asignar_citas_textuales(texto: str, citas: list[Cita]) -> None:
     una cita de la Corte Suprema no es de la Corte Constitucional aunque haya
     una antes.
     """
-    for m in _RE_COMILLAS.finditer(texto):
-        pasaje = next(g for g in m.groups() if g)
+    for p_ini, p_fin, pasaje in pasajes_entre_comillas(texto):
         if len(pasaje.split()) < MIN_PALABRAS_CITA_TEXTUAL:
             continue
         mejor, mejor_dist = None, None
         for c in citas:
-            if c.fin <= m.start():
-                dist = m.start() - c.fin
+            if c.fin <= p_ini:
+                dist = p_ini - c.fin
                 if dist > _ANTES_MAX:
                     continue
                 peso = dist
-            elif c.inicio >= m.end():
-                dist = c.inicio - m.end()
-                if dist > _DESPUES_MAX or _RE_SALTO_PARRAFO.search(texto, m.end(), c.inicio):
+            elif c.inicio >= p_fin:
+                dist = c.inicio - p_fin
+                if dist > _DESPUES_MAX or _RE_SALTO_PARRAFO.search(texto, p_fin, c.inicio):
                     continue
                 peso = dist * 1.5
             else:
@@ -283,7 +316,7 @@ def _asignar_citas_textuales(texto: str, citas: list[Cita]) -> None:
             if mejor_dist is None or peso < mejor_dist:
                 mejor, mejor_dist = c, peso
         if mejor is not None:
-            mejor.citas_textuales.append(CitaTextual(pasaje.strip(), m.start(), m.end()))
+            mejor.citas_textuales.append(CitaTextual(pasaje.strip(), p_ini, p_fin))
 
 
 def extraer(texto: str) -> list[Cita]:
