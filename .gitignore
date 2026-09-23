@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Caché de las fuentes oficiales: se rehace sola
+.cache/
+
+# Claves y secretos
+.env
+.env.*
+*.key
+*.pem
+
+# Salidas de trabajo
+*.log
+salidas/
+
+# Ajustes personales de Claude Code
+.claude/settings.local.json
+
+Thumbs.db
+desktop.ini
+.DS_Store

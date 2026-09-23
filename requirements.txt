@@ -1,0 +1,5 @@
+# Comparación de pasajes: alineación palabra a palabra y nombres de ponentes
+rapidfuzz>=3.0
+
+# Solo para leer escritos en PDF. Sin esto, el resto de formatos funciona igual.
+pypdf>=4.0
