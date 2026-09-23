@@ -1,0 +1,16 @@
+TEMA: la tutela contra providencias judiciales por defecto sustantivo
+MODELO: qwen3.5:9b
+
+**FUNDAMENTOS JURÍDICOS**
+
+La presente acción de tutela se funda en los artículos 86 y 29 de la Constitución Política, así como en los principios de debido proceso, contradicción procesal y defensa en juicio consagrados al artículo 29 superior. El demandante denuncia una violación directa a su derecho fundamental de defensa por parte del juez de primera instancia, quien dictó providencias que carecen de los requisitos sustantivos exigidos por la ley y la doctrina constitucional.
+
+La Corte Constitucional ha establecido con claridad que toda decisión judicial debe estar fundada en hechos probados y razones lógicas, garantizando el derecho a ser oído antes de una resolución adversa. En este sentido, es imperativo citar la **Sentencia SU-214 de 2021**, donde el magistrado ponente **Álvaro Tafur Galves** afirmó que: *"El debido proceso no es solo un conjunto de reglas formales, sino un principio rector que garantiza la búsqueda de la verdad y la justicia material"*. En el caso subyacente, al omitir la valoración integral de las pruebas producidas por la parte afectada y emitir una decisión basada en presunciones o razonamientos lógicos desconectados de la realidad fáctica, se vulneró la esencia del debido proceso.
+
+Asimismo, la **Sentencia T-972 de 2013**, proferida por el magistrado **Gloria Herrera Restrepo**, refuerza este argumento al precisar que: *"La falta de motivación suficiente o la ausencia de una fundamentación lógica en las sentencias y providencias judiciales constituye una violación a los derechos fundamentales de defensa y debido proceso"*. La providencia atacada carece de esa mínima racionalidad necesaria, generando un desequilibrio procesal irreparable.
+
+Adicionalmente, la jurisprudencia de la Corte ha sido tajante respecto al derecho a ser oído. En la **Sentencia SU-219 de 2016**, el ponente **Víctor Andrés Moreno Gómez** señaló que *"el silencio del juez frente a los argumentos esenciales de las partes o su descalificación arbitraria equivale a negar el derecho a ser oído"*. Este es el caso específico, pues la corte inferior no abordó las excpciones y argumentos planteados en la demanda, limitándose a una decisión sumaria que desconoce la contradicción procesal.
+
+La violación también se extiende al principio de igualdad y al derecho a un juez imparcial. La **Sentencia SU-214 de 2023**, con ponencia del magistrado **Álvaro Tafur Galves**, reitera que *"la carga de la prueba no puede ser desplazada injustificadamente hacia la parte más vulnerable, ni pueden adoptarse criterios probatorios que desconozcan las reglas ordinarias"*. Finalmente, la **Sentencia T-1325 de 2017**, emitida por el magistrado **Luis Guillermo Rivera Correa**, recuerda que *"el debido proceso es un derecho fundamental en sí mismo y no una garantía instrumental para otros fines procesales"*.
+
+En consecuencia, la providencia judicial impugnada carece de los presupuestos sustantivos para ser válida, pues vulnera el núcleo esencial del debido proceso al denegar efectivamente la defensa. Se solicita a este Alto Tribunal ordenar la nulidad de las providencias y garantizar el restablecimiento inmediato de los derechos fundamentales violados, bajo el amparo de la jurisprudencia citada que protege la integridad del juicio justo.

@@ -1,5 +1,18 @@
-# Comparación de pasajes: alineación palabra a palabra y nombres de ponentes
+# Cotejo vive en su propio entorno virtual (.venv). Motivo concreto: en esta
+# máquina el Python global tiene starlette 1.x por streamlit, y eso es
+# incompatible con fastapi 0.115. Un entorno propio evita que otro proyecto
+# le rompa a este las dependencias, y al revés.
+#
+#   python -m venv .venv
+#   .venv\Scripts\python -m pip install -r requirements.txt
+
+# Comparación de pasajes y de nombres de ponentes
 rapidfuzz>=3.0
 
-# Solo para leer escritos en PDF. Sin esto, el resto de formatos funciona igual.
+# Leer escritos en PDF. Sin esto, el resto de formatos funciona igual.
 pypdf>=4.0
+
+# Interfaz web local
+fastapi>=0.120
+uvicorn>=0.30
+python-multipart>=0.0.9

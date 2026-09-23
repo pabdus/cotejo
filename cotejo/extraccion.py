@@ -128,6 +128,13 @@ _RE_PONENTE = re.compile(
     r"\s*[:.]?\s*(?:(?:el|la)\s+)?(?:(?:Dr|Dra|Doctor|Doctora)\.?\s+)?(?P<nombre>" + _NOMBRE + r")"
 )
 _DISTANCIA_PONENTE = 160
+# El ponente también se nombra ANTES: «el Magistrado Rodrigo del Corral precisó
+# en la Sentencia SU-573 de 2019». Lo escribió así uno de los escritos de la
+# evaluación, y ese ponente se quedaba sin comprobar.
+_RE_PONENTE_ANTES = re.compile(
+    r"[Mm]agistrad[oa](?:\s+[Pp]onente)?\s+(?P<nombre>" + _NOMBRE + r")"
+    r"[^.;:\n]{0,60}$"
+)
 
 # --------------------------------------------------------------- comillas
 # Las comillas se leen con un pequeño analizador y no con una expresión
@@ -147,14 +154,34 @@ def pasajes_entre_comillas(texto: str) -> list[tuple[int, int, str]]:
     Las comillas tipográficas llevan la cuenta del anidamiento. Las rectas no
     distinguen apertura de cierre, así que solo se emparejan fuera de
     cualquier comilla tipográfica, de dos en dos.
+
+    Comillas desparejadas: si al terminar un párrafo queda una apertura sin
+    cerrar pero hubo algún cierre después de ella —«““En el caso…”», una
+    comilla de más al copiar—, el pasaje va de la apertura más externa al
+    último cierre. Antes esos pasajes se quedaban sin comprobar EN SILENCIO,
+    que es lo peor que puede hacer un verificador: el abogado cree que se
+    miraron.
     """
     salida: list[tuple[int, int, str]] = []
     pila: list[tuple[str, int]] = []
+    ultimo_cierre: int | None = None
     recta: int | None = None
+
+    def recuperar_desparejado() -> None:
+        nonlocal pila, ultimo_cierre
+        if pila and ultimo_cierre is not None and ultimo_cierre > pila[0][1]:
+            ini = pila[0][1]
+            salida.append((ini, ultimo_cierre + 1, texto[ini + 1:ultimo_cierre]))
+        pila, ultimo_cierre = [], None
+
     for i, ch in enumerate(texto):
-        if ch in _ABREN and recta is None:
+        if ch == "\n" and texto.startswith("\n", i + 1):
+            recuperar_desparejado()     # un pasaje desparejado no cruza párrafos
+            recta = None
+        elif ch in _ABREN and recta is None:
             pila.append((ch, i))
         elif ch in _CIERRAN and pila:
+            ultimo_cierre = i
             # Se cierra hasta la apertura que corresponde a este signo
             while pila and pila[-1][0] != _CIERRAN[ch]:
                 pila.pop()
@@ -162,12 +189,15 @@ def pasajes_entre_comillas(texto: str) -> list[tuple[int, int, str]]:
                 _, ini = pila.pop()
                 if not pila:
                     salida.append((ini, i + 1, texto[ini + 1:i]))
+                    ultimo_cierre = None
         elif ch == '"' and not pila:
             if recta is None:
                 recta = i
             else:
                 salida.append((recta, i + 1, texto[recta + 1:i]))
                 recta = None
+    recuperar_desparejado()
+    salida.sort()
     return [s for s in salida if len(s[2].strip()) >= 20]
 _ANTES_MAX = 700        # la cita suele anunciar el pasaje: "la Corte señaló: «…»"
 _DESPUES_MAX = 150      # o cerrarlo: "«…» (Sentencia T-406 de 1992)"
@@ -278,6 +308,13 @@ def _asignar_ponentes(texto: str, citas: list[Cita]) -> None:
         tope = orden[i + 1].inicio if i + 1 < len(orden) else len(texto)
         ventana = texto[c.fin:min(tope, c.fin + _DISTANCIA_PONENTE)]
         m = _RE_PONENTE.search(ventana)
+        if m:
+            c.ponente = m.group("nombre").strip()
+            continue
+        # Detrás no había: se mira delante, sin cruzar la cita anterior
+        suelo = orden[i - 1].fin if i else 0
+        previo = texto[max(suelo, c.inicio - _DISTANCIA_PONENTE):c.inicio]
+        m = _RE_PONENTE_ANTES.search(previo)
         if m:
             c.ponente = m.group("nombre").strip()
 

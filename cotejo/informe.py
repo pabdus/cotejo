@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime as dt
 import html
 import json
+import re
 
 from .verificacion import ETIQUETA, Estado, Hallazgo, Informe
 
@@ -163,10 +164,36 @@ text-transform:uppercase;padding:4px 7px;border-radius:3px}
 text-transform:uppercase;color:var(--suave);display:block;margin-bottom:3px}
 blockquote{margin:0 0 8px;padding:6px 12px;border-left:2px solid var(--linea);color:var(--tinta)}
 blockquote.real{border-left-color:var(--verde)}
+mark{background:var(--ambar-f);color:var(--ambar);font-weight:700;padding:0 2px;border-radius:2px}
+blockquote.real mark{background:var(--verde-f);color:var(--verde)}
 .nota{font:13px/1.55 "IBM Plex Sans",system-ui,sans-serif;color:var(--suave);
 border-top:1px solid var(--linea);margin-top:36px;padding-top:14px}
 @media print{body{background:#fff}.cita{border-color:#bbb}}
 """
+
+
+def _resaltar(texto: str, palabras: list[str]) -> str:
+    """Escapa el texto y marca la primera aparición de cada tramo distinto.
+
+    Es solo ayuda visual: la diferencia exacta ya va escrita en la
+    observación, así que si un tramo aparece dos veces y se marca el que no
+    era, no se pierde información.
+    """
+    marcas: list[tuple[int, int]] = []
+    for p in palabras:
+        p = p.strip()
+        if not p:
+            continue
+        m = re.search(r"(?<!\w)" + re.escape(p) + r"(?!\w)", texto, re.IGNORECASE)
+        if m and all(m.end() <= a or m.start() >= b for a, b in marcas):
+            marcas.append((m.start(), m.end()))
+    salida, pos = [], 0
+    for a, b in sorted(marcas):
+        salida.append(_E(texto[pos:a]))
+        salida.append(f"<mark>{_E(texto[a:b])}</mark>")
+        pos = b
+    salida.append(_E(texto[pos:]))
+    return "".join(salida)
 
 
 def _tarjeta(h: Hallazgo) -> str:
@@ -205,17 +232,21 @@ def _tarjeta(h: Hallazgo) -> str:
                           f"<blockquote class=\"real\">{_E(_plano(r.pasaje))}</blockquote></div>")
             continue
         peor = min(r.fragmentos, key=lambda f: f.puntuacion, default=None)
-        etiqueta = ("no coincide literalmente" if r.estado == "difiere"
-                    else "no aparece en la sentencia")
+        difiere = r.estado == "difiere"
+        etiqueta = "no coincide literalmente" if difiere else "no aparece en la sentencia"
+        citado = (_resaltar(_plano(r.pasaje), [e for e, _ in r.diferencias])
+                  if difiere else _E(_plano(r.pasaje)))
         partes.append('<div class="pasaje">'
                       f'<span class="et">Pasaje citado · {_E(etiqueta)} · '
                       f'{r.puntuacion:.0f} % de las palabras</span>'
-                      f"<blockquote>{_E(_plano(r.pasaje))}</blockquote>")
+                      f"<blockquote>{citado}</blockquote>")
         if peor and peor.mas_parecido:
-            titulo = ("Lo que dice la sentencia en ese punto" if r.estado == "difiere"
+            titulo = ("Lo que dice la sentencia en ese punto" if difiere
                       else "Lo más parecido que dice la sentencia")
+            real = (_resaltar(_plano(peor.mas_parecido), [s for _, s in peor.diferencias])
+                    if difiere else _E(_plano(peor.mas_parecido)))
             partes.append(f'<span class="et">{titulo}</span>'
-                          f'<blockquote class="real">{_E(_plano(peor.mas_parecido))}</blockquote>')
+                          f'<blockquote class="real">{real}</blockquote>')
         partes.append("</div>")
     partes.append("</article>")
     return "".join(partes)

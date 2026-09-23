@@ -52,8 +52,10 @@ TIPOS = ("T", "C", "SU")
 # la comprobación contra la relatoría, que va siempre al día.
 CADUCIDAD_INDICE = 7 * 24 * 3600
 
-# Cortesía con un servidor público: una petición por segundo como mucho.
-PAUSA_RELATORIA = 1.0
+# Cortesía con un servidor público. Con una petición por segundo sostenida
+# durante una evaluación, el sitio acabó cortando la conexión a esta máquina.
+# Para un escrito normal —diez o veinte citas— 1,5 s no se nota.
+PAUSA_RELATORIA = float(os.environ.get("COTEJO_PAUSA", "1.5"))
 
 
 def _dir_cache() -> Path:
@@ -105,10 +107,27 @@ def id_oficial(tipo: str, numero: str, anio: int) -> str:
     return f"{tipo.upper()}-{normalizar_numero(numero)}/{anio_completo(anio) % 100:02d}"
 
 
-def url_relatoria(tipo: str, numero: str, anio: int) -> str:
+def urls_relatoria(tipo: str, numero: str, anio: int) -> list[str]:
+    """URLs posibles en la relatoría, la más probable primero.
+
+    Las tutelas y las de constitucionalidad llevan guion entre tipo y número
+    (T-406-92.htm, c-214-21.htm); las de unificación NO (SU022-23.htm). Se
+    descubrió porque las 280 sentencias SU consultadas durante la evaluación
+    habían devuelto todas la página de «no existe». Se prueba la otra forma
+    como respaldo, por si la relatoría no es consistente en años antiguos.
+    """
     anio4 = anio_completo(anio)
-    archivo = f"{tipo.upper()}-{normalizar_numero(numero)}-{anio4 % 100:02d}"
-    return RELATORIA.format(anio=anio4, archivo=archivo)
+    tipo, num, yy = tipo.upper(), normalizar_numero(numero), f"{anio4 % 100:02d}"
+    con_guion = RELATORIA.format(anio=anio4, archivo=f"{tipo}-{num}-{yy}")
+    sin_guion = RELATORIA.format(anio=anio4, archivo=f"{tipo}{num}-{yy}")
+    # El respaldo solo para las SU: para T y C la forma con guion está
+    # comprobada de 1992 a 2025, y probar dos URLs por cada sentencia
+    # inventada duplica la carga sobre un servidor que ya nos cortó una vez.
+    return [sin_guion, con_guion] if tipo == "SU" else [con_guion]
+
+
+def url_relatoria(tipo: str, numero: str, anio: int) -> str:
+    return urls_relatoria(tipo, numero, anio)[0]
 
 
 # ------------------------------------------------------------------ índice
@@ -174,6 +193,12 @@ class Indice:
     def __len__(self) -> int:
         return len(self._por_id)
 
+    @property
+    def fecha_mas_reciente(self) -> str | None:
+        """Hasta dónde llega el índice: sirve para leer una ausencia en él."""
+        fechas = [p.fecha for p in self._por_id.values() if p.fecha]
+        return max(fechas) if fechas else None
+
     def buscar(self, tipo: str, numero: str, anio: int) -> Providencia | None:
         try:
             return self._por_id.get(id_oficial(tipo, numero, anio))
@@ -201,6 +226,61 @@ _PALABRAS_PAGINA_VACIA = 400    # la página de "no existe" tiene unas 105
 # para siempre porque no estuviera el martes.
 _CADUCIDAD_AUSENCIA = 24 * 3600
 
+# Reintentos y cortacircuitos. Tras unas 800 peticiones en una tarde, el sitio
+# de la Corte dejó de responder a esta máquina —ni la portada—, cortando la
+# conexión TLS. Si eso le pasa a un abogado, pierde el acceso a la relatoría
+# por culpa de la herramienta. Así que: reintentar lo transitorio con espera
+# creciente, y si falla varias veces seguidas, DEJAR de insistir durante un
+# rato y marcar como «sin confirmar» lo que dependa de ella.
+_REINTENTOS = 3
+_FALLOS_PARA_CORTAR = 3
+_CORTE_SEGUNDOS = 15 * 60
+_fallos_seguidos = 0
+_cortado_hasta = 0.0
+
+
+class RelatoriaNoDisponible(Exception):
+    """La relatoría no responde; no quiere decir que la sentencia no exista."""
+
+
+def relatoria_disponible() -> bool:
+    return time.time() >= _cortado_hasta
+
+
+def _descargar_pagina(url: str) -> bytes:
+    """GET con reintentos. Un 404 es una respuesta; un corte, un error."""
+    global _ultima_peticion, _fallos_seguidos, _cortado_hasta
+    if not relatoria_disponible():
+        raise RelatoriaNoDisponible(
+            "la relatoría dejó de responder hace poco; se espera antes de insistir")
+
+    ultimo: Exception | None = None
+    for intento in range(_REINTENTOS):
+        espera = PAUSA_RELATORIA * (2 ** intento) - (time.time() - _ultima_peticion)
+        if espera > 0:
+            time.sleep(espera)
+        _ultima_peticion = time.time()
+        try:
+            req = urllib.request.Request(url, headers=CABECERA)
+            with urllib.request.urlopen(req, timeout=60) as r:
+                datos = r.read()
+            _fallos_seguidos = 0
+            return datos
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                _fallos_seguidos = 0
+                return b""
+            if exc.code < 500 and exc.code != 429:
+                raise
+            ultimo = exc
+        except (urllib.error.URLError, ConnectionError, TimeoutError, OSError) as exc:
+            ultimo = exc
+
+    _fallos_seguidos += 1
+    if _fallos_seguidos >= _FALLOS_PARA_CORTAR:
+        _cortado_hasta = time.time() + _CORTE_SEGUNDOS
+    raise RelatoriaNoDisponible(f"{type(ultimo).__name__}: {ultimo}")
+
 
 def _ruta_texto(tipo: str, numero: str, anio: int) -> Path:
     nombre = f"{tipo.upper()}-{normalizar_numero(numero)}-{anio_completo(anio)}.txt.gz"
@@ -215,8 +295,10 @@ def _parece_la_sentencia(texto: str, tipo: str, numero: str) -> bool:
         return False
     num = normalizar_numero(numero)
     sin_ceros = num.lstrip("0") or "0"
-    # El número tiene que aparecer en el cuerpo, con o sin ceros delante
-    patron = rf"\b{tipo}\s*[-–]\s*0*{re.escape(sin_ceros)}\b"
+    # El número tiene que aparecer en el cuerpo, con o sin ceros delante y con
+    # cualquier separador o ninguno: «T-406/92», pero también «SU.214/16» y
+    # «SU214-23», que es como escriben las de unificación.
+    patron = rf"\b{tipo}\s*[-–.]?\s*0*{re.escape(sin_ceros)}(?!\d)"
     return re.search(patron, texto, re.IGNORECASE) is not None
 
 
@@ -225,8 +307,11 @@ def texto_relatoria(tipo: str, numero: str, anio: int) -> str | None:
 
     Se guarda en caché comprimido: una sentencia de constitucionalidad con sus
     salvamentos puede pasar de las 280.000 palabras.
+
+    Lanza RelatoriaNoDisponible si no se pudo preguntar. Quien llama tiene que
+    distinguir «la relatoría dice que no existe» (None) de «no se pudo
+    preguntar» (excepción): confundirlas produce falsos «no existe».
     """
-    global _ultima_peticion
     ruta = _ruta_texto(tipo, numero, anio)
     if ruta.exists():
         with gzip.open(ruta, "rt", encoding="utf-8") as f:
@@ -237,24 +322,13 @@ def texto_relatoria(tipo: str, numero: str, anio: int) -> str | None:
             return None
         # Ausencia caducada: se vuelve a preguntar
 
-    espera = PAUSA_RELATORIA - (time.time() - _ultima_peticion)
-    if espera > 0:
-        time.sleep(espera)
-    _ultima_peticion = time.time()
-
-    url = url_relatoria(tipo, numero, anio)
-    try:
-        req = urllib.request.Request(url, headers=CABECERA)
-        with urllib.request.urlopen(req, timeout=60) as r:
-            crudo = r.read()
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            crudo = b""
-        else:
-            raise
-    texto = documentos._de_html(crudo) if crudo else ""
-    if not _parece_la_sentencia(texto, tipo, numero):
-        texto = ""
+    texto = ""
+    for url in urls_relatoria(tipo, numero, anio):
+        crudo = _descargar_pagina(url)
+        candidato = documentos._de_html(crudo) if crudo else ""
+        if _parece_la_sentencia(candidato, tipo, numero):
+            texto = candidato
+            break
     # Se cachea también la ausencia, como cadena vacía, para no repetir
     with gzip.open(ruta, "wt", encoding="utf-8") as f:
         f.write(texto)

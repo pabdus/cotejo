@@ -1,0 +1,522 @@
+[
+ [
+  "qwen3.5_9b_01.txt",
+  "con_observaciones",
+  "SU-214 de 2023",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s)."
+  ]
+ ],
+ [
+  "qwen3.5_9b_01.txt",
+  "con_observaciones",
+  "SU-573 de 2019",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s)."
+  ]
+ ],
+ [
+  "qwen3.5_9b_01.txt",
+  "no_existe",
+  "SU-157 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_01.txt",
+  "no_existe",
+  "T-1398 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_02.txt",
+  "no_existe",
+  "SU-214 de 2013",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_02.txt",
+  "no_existe",
+  "SU-210 de 2008",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_02.txt",
+  "no_existe",
+  "SU-076 de 2015",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_02.txt",
+  "no_existe",
+  "SU-467 de 2019",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_02.txt",
+  "no_existe",
+  "SU-1385 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_03.txt",
+  "no_existe",
+  "SU-210 de 2015",
+  [
+   "SU-210/17"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_03.txt",
+  "no_existe",
+  "SU-672 de 2015",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_03.txt",
+  "no_existe",
+  "T-893 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_03.txt",
+  "no_existe",
+  "SU-380 de 2019",
+  [
+   "SU-380/21"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_03.txt",
+  "no_existe",
+  "T-957 de 2020",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_04.txt",
+  "no_existe",
+  "SU-2089 de 2013",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_04.txt",
+  "no_existe",
+  "SU-2105 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_04.txt",
+  "no_existe",
+  "SU-1092 de 2014",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_04.txt",
+  "no_existe",
+  "SU-259 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_04.txt",
+  "no_existe",
+  "SU-169 de 2019",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_05.txt",
+  "no_existe",
+  "SU-276 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_05.txt",
+  "no_existe",
+  "SU-689 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_05.txt",
+  "no_existe",
+  "SU-1537 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_05.txt",
+  "no_existe",
+  "T-894 de 2015",
+  [
+   "T-894/13",
+   "T-894/14"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_05.txt",
+  "no_existe",
+  "SU-1346 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_06.txt",
+  "no_existe",
+  "SU-275 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_06.txt",
+  "no_existe",
+  "T-645 de 2017",
+  [
+   "T-645/15"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_06.txt",
+  "verificada",
+  "T-379 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_06.txt",
+  "no_existe",
+  "SU-346 de 2015",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_06.txt",
+  "no_existe",
+  "T-847 de 2016",
+  [
+   "T-847/14"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_07.txt",
+  "no_existe",
+  "SU-1630 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_07.txt",
+  "no_existe",
+  "SU-1690 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_07.txt",
+  "no_existe",
+  "SU-2076 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_07.txt",
+  "no_existe",
+  "SU-1937 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_08.txt",
+  "no_existe",
+  "SU-215 de 2017",
+  [
+   "SU-215/16"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_08.txt",
+  "con_observaciones",
+  "T-496 de 2018",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (RemoteDisconnected: Remote end closed connection without response)"
+  ]
+ ],
+ [
+  "qwen3.5_9b_08.txt",
+  "sin_confirmar",
+  "SU-893 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_08.txt",
+  "con_observaciones",
+  "T-466 de 2023",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+  ]
+ ],
+ [
+  "qwen3.5_9b_08.txt",
+  "sin_confirmar",
+  "SU-1305 de 2024",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_09.txt",
+  "sin_confirmar",
+  "SU-2057 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_09.txt",
+  "sin_confirmar",
+  "SU-215 de 2023",
+  [
+   "SU-215/22"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_09.txt",
+  "sin_confirmar",
+  "T-850 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_09.txt",
+  "sin_confirmar",
+  "SU-1267 de 2019",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_09.txt",
+  "con_observaciones",
+  "SU-388 de 2022",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+  ]
+ ],
+ [
+  "qwen3.5_9b_10.txt",
+  "sin_confirmar",
+  "SU-342 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_10.txt",
+  "sin_confirmar",
+  "T-597 de 2018",
+  [
+   "T-597/16",
+   "T-597/17",
+   "T-597/19"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_10.txt",
+  "sin_confirmar",
+  "SU-1342 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_10.txt",
+  "verificada",
+  "SU-095 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_10.txt",
+  "sin_confirmar",
+  "T-637 de 2019",
+  [
+   "T-637/17"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_11.txt",
+  "sin_confirmar",
+  "SU-214/09",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_11.txt",
+  "con_observaciones",
+  "T-684/12",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+  ]
+ ],
+ [
+  "qwen3.5_9b_11.txt",
+  "sin_confirmar",
+  "SU-213/08",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_11.txt",
+  "sin_confirmar",
+  "T-884/16",
+  [
+   "T-884/14"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_11.txt",
+  "sin_confirmar",
+  "SU-259/18",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_12.txt",
+  "sin_confirmar",
+  "SU-2153 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_12.txt",
+  "sin_confirmar",
+  "SU-1506 de 2018",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_12.txt",
+  "sin_confirmar",
+  "SU-045 de 2019",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_12.txt",
+  "sin_confirmar",
+  "SU-2285 de 2017",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_12.txt",
+  "sin_confirmar",
+  "SU-2106 de 2020",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_13.txt",
+  "sin_confirmar",
+  "SU-215 de 2004",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_13.txt",
+  "sin_confirmar",
+  "SU-218 de 2013",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_14.txt",
+  "no_existe",
+  "SU-214 de 2013",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_14.txt",
+  "sin_confirmar",
+  "T-1276 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_14.txt",
+  "con_observaciones",
+  "SU-095 de 2018",
+  [],
+  [
+   "No se pudo obtener el texto de la sentencia para comprobar 1 pasaje(s) citado(s). (URLError: <urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1000)>)"
+  ]
+ ],
+ [
+  "qwen3.5_9b_15.txt",
+  "sin_confirmar",
+  "SU-214 de 2021",
+  [
+   "SU-214/22",
+   "SU-214/23"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_15.txt",
+  "sin_confirmar",
+  "T-972 de 2013",
+  [
+   "T-972/11",
+   "T-972/12",
+   "T-972/14"
+  ],
+  []
+ ],
+ [
+  "qwen3.5_9b_15.txt",
+  "sin_confirmar",
+  "SU-219 de 2016",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_15.txt",
+  "verificada",
+  "SU-214 de 2023",
+  [],
+  []
+ ],
+ [
+  "qwen3.5_9b_15.txt",
+  "sin_confirmar",
+  "T-1325 de 2017",
+  [],
+  []
+ ]
+]

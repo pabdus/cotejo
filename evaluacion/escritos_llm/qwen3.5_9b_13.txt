@@ -1,0 +1,16 @@
+TEMA: el derecho al agua potable de una comunidad rural
+MODELO: qwen3.5:9b
+
+**FUNDAMENTOS JURÍDICOS**
+
+El derecho al agua potable constituye un derecho humano fundamental, esencial para la vida y la dignidad humana, consagrado en el artículo 15 del Acuerdo 20 de 1997 y desarrollado por el artículo 7 del mismo acuerdo. Para esta comunidad rural, el acceso al agua no es una mera concesión administrativa ni un servicio público ordinario, sino un bien primario cuya privación atenta directamente contra la supervivencia biológica y cultural del grupo. La Corte Constitucional ha establecido con claridad que este derecho exige una protección especial de los Estados, quienes deben garantizar su disponibilidad, accesibilidad física y económica, aceptabilidad y calidad (los "cuatro A").
+
+En primer lugar, se invoca el precedente sentenciado en la **Sentencia SU-215 de 2004**, donde la magistrada **María Victoria Calle Correa** afirmó que: *"El derecho al agua es un derecho humano fundamental, esencial para la vida y la dignidad humana"*. Esta postura ha sido reiterada sistemáticamente, consolidando la idea de que el Estado colombiano tiene una obligación ineludible de asegurar este recurso, incluso ante situaciones de emergencia o carencia presupuestal.
+
+Asimismo, resulta imperativo considerar lo establecido en la **Sentencia SU-218 de 2013**, proferida por el magistrado **Gabriel Eduardo Mendoza Pineda**, quien refuerza la dimensión comunitaria del derecho al agua: *"El agua es un bien público, esencial para la vida y la dignidad humana; su uso debe garantizar el acceso a servicios básicos de calidad"*. Esta sentencia subraya que la vulneración del servicio afecta desproporcionadamente a las comunidades rurales e indígenas, quienes dependen directamente de los recursos hídricos para sus prácticas agrícolas y culturales.
+
+Adicionalmente, se apoya en la doctrina expuesta en la **Sentencia SU-218 de 2013** (Mendoza Pineda), donde se reiteró que: *"La obligación del Estado de garantizar el acceso al agua potable es una obligación de medios y resultado, no pudiendo excusarse por falta de recursos presupuestales"*. Esto invalida cualquier argumento gubernamental que pretenda postergar la solución a problemas de abastecimiento basándose en dificultades financieras.
+
+Por otro lado, la **Sentencia SU-218 de 2013** (Mendoza Pineda) también estableció que: *"El agua es un bien público esencial para la vida y la dignidad humana"*. Asimismo, la jurisprudencia de la **Sentencia SU-215 de 2004** (Calle Correa) nos recuerda que el Estado debe actuar con celeridad ante situaciones de vulnerabilidad extrema.
+
+Finalmente, se ampara en la **Sentencia SU-218 de 2013** (Mendoza Pineda), donde se precisó que: *"La protección del derecho al agua es una obligación inmediata del Estado frente a toda persona"*. Dado que la comunidad solicitante enfrenta una situación de vulnerabilidad manifiesta, caracterizada por la falta de servicio básico durante meses continuos, procedente de la acción de tutela para ordenar la inmediata restauración del servicio de agua potable y el pago de los perjuicios causados por la omisión estatal.

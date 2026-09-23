@@ -166,9 +166,16 @@ def _verificar_cc(clave: str, grupo: list[Cita], indice: cc.Indice,
             )
             fuente = "relatoria"
         elif fallo_red:
+            # No es «no existe»: la segunda fuente no contestó. Pero decir
+            # hasta dónde llega el índice le da al abogado con qué juzgar:
+            # una sentencia de 2019 que no está en un índice que llega a 2026
+            # es otra cosa que una de la semana pasada.
+            hasta = indice.fecha_mas_reciente
+            cobertura = f" (el índice llega hasta el {hasta})" if hasta else ""
             return Hallazgo(clave, Estado.SIN_CONFIRMAR, grupo,
                             posibles=indice.vecinas(c0.tipo, c0.numero, c0.anio),
-                            motivo=f"no está en el índice oficial y la relatoría no respondió ({fallo_red})")
+                            motivo=(f"no figura en el índice oficial{cobertura}, y la relatoría "
+                                    f"no respondió para confirmarlo: {fallo_red}"))
         else:
             return Hallazgo(clave, Estado.NO_EXISTE, grupo,
                             posibles=indice.vecinas(c0.tipo, c0.numero, c0.anio),

@@ -1,0 +1,43 @@
+Índice: 29474 providencias
+
+Descargando 60 sentencias de la relatoría (1 petición por segundo)...
+
+========================================================================
+PASAJES — 60 sentencias × 8 variantes
+========================================================================
+variante     esperado       coincide     difiere  no_aparece  sin_pasaje demasiado_c   acierto
+literal      coincide             60           0           0           0           0   100.0 %
+ruido        coincide             60           0           0           0           0   100.0 %
+elision      coincide             60           0           0           0           0   100.0 %
+negacion     difiere               0          60           0           0           0   100.0 %
+sustitucion  difiere               0          60           0           0           0   100.0 %
+omision      difiere               0          60           0           0           0   100.0 %
+cruzado      no_aparece            0           1          59           0           0    98.3 %
+barajado     no_aparece            0           0          60           0           0   100.0 %
+
+Acierto global: 479/480 (99.8 %)
+Alteraciones dadas por buenas (lo grave): 0
+
+Fallos, para mirarlos uno a uno:
+    ('cruzado', 'T-131/24', 'difiere', 73.9, 'DECISIÓN En mérito de lo expuesto, la Sala Sexta de Revisión de la Corte Constitucional, administrando justicia en nombr')
+
+Preparando 400 casos de existencia...
+  50/400  (24 s)
+  100/400  (48 s)
+  150/400  (75 s)
+  200/400  (95 s)
+  250/400  (120 s)
+  300/400  (148 s)
+  350/400  (171 s)
+  400/400  (199 s)
+
+========================================================================
+EXISTENCIA — 400 casos (200 reales, 200 inventadas)
+========================================================================
+              verificada con_observac    no_existe sin_confirma no_verificab  no_extraida
+real                 200            0            0            0            0            0
+inventada              0            0          200            0            0            0
+
+Reales dadas por inexistentes (lo grave): 0 de 200
+Inventadas detectadas: 200 de 200 (100.0 %)
+Huecos del índice oficial (inventadas que la relatoría sí tiene): 0

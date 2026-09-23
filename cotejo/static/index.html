@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotejo</title>
+<style>
+:root{
+  --papel:#F7F5F0; --caja:#FFFFFF; --tinta:#1C1B18; --suave:#5E5A52; --linea:#DAD4C8;
+  --acento:#23395B; --acento-t:#FFFFFF; --acento-suave:#E6EBF2;
+  --rojo:#9B2C22; --rojo-f:#F6E4E0; --ambar:#8A5A0B; --verde:#2F6B45; --gris:#6B6B6B;
+  --sombra:0 1px 2px rgba(28,27,24,.05),0 6px 20px rgba(28,27,24,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --papel:#131312; --caja:#1C1B19; --tinta:#ECE9E2; --suave:#A8A398; --linea:#34322D;
+    --acento:#9DB6DA; --acento-t:#131312; --acento-suave:#1E2A3A;
+    --rojo:#E5897D; --rojo-f:#3A1D19; --ambar:#E0B465; --verde:#86C39C; --gris:#A9A9A9;
+    --sombra:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#131312; --caja:#1C1B19; --tinta:#ECE9E2; --suave:#A8A398; --linea:#34322D;
+  --acento:#9DB6DA; --acento-t:#131312; --acento-suave:#1E2A3A;
+  --rojo:#E5897D; --rojo-f:#3A1D19; --ambar:#E0B465; --verde:#86C39C; --gris:#A9A9A9;
+  --sombra:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font:16px/1.6 Georgia,"Times New Roman",serif}
+.sans{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:40px 20px 80px;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:6px;border-bottom:2px solid var(--tinta);padding-bottom:18px}
+.marca{font:600 12px/1 system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--acento)}
+h1{margin:0;font-size:clamp(1.7rem,4vw,2.3rem);line-height:1.15;text-wrap:balance}
+.sub{margin:0;color:var(--suave);max-width:62ch}
+.panel{background:var(--caja);border:1px solid var(--linea);border-radius:6px;padding:22px;box-shadow:var(--sombra);
+  display:flex;flex-direction:column;gap:14px}
+.soltar{border:2px dashed var(--linea);border-radius:6px;padding:28px 18px;text-align:center;cursor:pointer;
+  font:15px/1.5 system-ui,sans-serif;color:var(--suave);transition:border-color .15s,background .15s}
+.soltar:hover,.soltar.encima{border-color:var(--acento);background:var(--acento-suave);color:var(--tinta)}
+.soltar strong{color:var(--tinta)}
+.soltar:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+.o{display:flex;align-items:center;gap:12px;font:12px/1 system-ui,sans-serif;color:var(--suave);
+  text-transform:uppercase;letter-spacing:.12em}
+.o::before,.o::after{content:"";flex:1;height:1px;background:var(--linea)}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--linea);border-radius:5px;
+  background:var(--papel);color:var(--tinta);padding:12px;font:14px/1.5 Georgia,serif}
+.acciones{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+button{font:600 14px/1 system-ui,sans-serif;border-radius:5px;padding:12px 18px;cursor:pointer;
+  border:1px solid var(--acento);background:var(--acento);color:var(--acento-t)}
+button.sec{background:transparent;color:var(--acento)}
+button:disabled{opacity:.55;cursor:progress}
+.estado{font:14px/1.5 system-ui,sans-serif;color:var(--suave)}
+.estado.error{color:var(--rojo)}
+.fichero{font:14px/1.4 system-ui,sans-serif;color:var(--tinta)}
+.resultado{display:flex;flex-direction:column;gap:12px}
+.resultado[hidden]{display:none}
+iframe{width:100%;min-height:70vh;border:1px solid var(--linea);border-radius:6px;background:var(--caja)}
+.privacidad{font:13px/1.55 system-ui,sans-serif;color:var(--suave);max-width:70ch;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="marca">Cotejo</span>
+    <h1>Verifica las citas de un escrito antes de radicarlo</h1>
+    <p class="sub">Comprueba contra las fuentes oficiales que cada sentencia de la Corte Constitucional
+      existe, que el ponente es el correcto y que lo que se cita entre comillas lo dice de verdad.</p>
+  </header>
+
+  <section class="panel" aria-label="Escrito a verificar">
+    <div id="soltar" class="soltar" tabindex="0" role="button" aria-label="Elegir un escrito">
+      <strong>Arrastra aquí el escrito</strong> o haz clic para elegirlo<br>
+      Word, PDF, ODT, RTF, HTML o texto
+    </div>
+    <input id="fichero" type="file" hidden
+      accept=".docx,.pdf,.odt,.rtf,.html,.htm,.md,.txt">
+    <div id="nombre" class="fichero" hidden></div>
+    <div class="o">o pega el texto</div>
+    <textarea id="texto" placeholder="Pega aquí los fundamentos jurídicos del escrito…"></textarea>
+    <div class="acciones">
+      <button id="verificar">Verificar citas</button>
+      <span id="estado" class="estado sans" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section id="resultado" class="resultado" hidden aria-label="Informe">
+    <div class="acciones">
+      <button id="descargar" class="sec">Descargar informe</button>
+      <button id="descargar-json" class="sec">Descargar JSON</button>
+    </div>
+    <iframe id="informe" title="Informe de verificación"></iframe>
+  </section>
+
+  <p class="privacidad">El escrito se procesa en este equipo y no se envía a ningún servidor. Para
+    verificar, Cotejo consulta el índice de datos abiertos de la Corte Constitucional y su
+    relatoría, y en esas consultas solo viaja el número de cada sentencia, nunca el texto del escrito.</p>
+</main>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  let fichero = null;
+  let ultimo = null;
+
+  function mostrarFichero(f) {
+    fichero = f;
+    const nombre = $("nombre");
+    nombre.hidden = !f;
+    nombre.textContent = f ? "Escrito: " + f.name : "";
+  }
+
+  const zona = $("soltar");
+  zona.addEventListener("click", () => $("fichero").click());
+  zona.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("fichero").click(); }
+  });
+  $("fichero").addEventListener("change", (e) => mostrarFichero(e.target.files[0] || null));
+  ["dragenter", "dragover"].forEach((ev) =>
+    zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.add("encima"); }));
+  ["dragleave", "drop"].forEach((ev) =>
+    zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.remove("encima"); }));
+  zona.addEventListener("drop", (e) => {
+    if (e.dataTransfer.files.length) mostrarFichero(e.dataTransfer.files[0]);
+  });
+
+  function avisar(msg, error) {
+    const el = $("estado");
+    el.textContent = msg;
+    el.classList.toggle("error", !!error);
+  }
+
+  $("verificar").addEventListener("click", async () => {
+    const texto = $("texto").value;
+    if (!fichero && !texto.trim()) { avisar("Sube un escrito o pega el texto.", true); return; }
+    const datos = new FormData();
+    if (fichero) datos.append("fichero", fichero);
+    else datos.append("texto", texto);
+
+    const boton = $("verificar");
+    boton.disabled = true;
+    avisar("Verificando… la primera consulta de cada sentencia puede tardar unos segundos.");
+    try {
+      const r = await fetch("/api/verificar", { method: "POST", body: datos });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.detail || "No se pudo verificar el escrito.");
+      ultimo = d;
+      $("informe").srcdoc = d.html;
+      $("resultado").hidden = false;
+      const s = d.resumen;
+      const atencion = s.no_existe + s.con_observaciones + s.sin_confirmar;
+      avisar(atencion
+        ? `${atencion} cita(s) requieren atención de ${d.hallazgos.length}.`
+        : `Sin problemas en ${d.hallazgos.length} cita(s).`);
+      $("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {
+      avisar(err.message, true);
+    } finally {
+      boton.disabled = false;
+    }
+  });
+
+  function descargar(contenido, nombre, tipo) {
+    const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+    const a = document.createElement("a");
+    a.href = url; a.download = nombre; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const base = () => (ultimo ? ultimo.documento.replace(/\.[^.]+$/, "") : "escrito");
+  $("descargar").addEventListener("click", () =>
+    ultimo && descargar(ultimo.html, "cotejo-" + base() + ".html", "text/html"));
+  $("descargar-json").addEventListener("click", () => {
+    if (!ultimo) return;
+    const copia = Object.assign({}, ultimo); delete copia.html;
+    descargar(JSON.stringify(copia, null, 2), "cotejo-" + base() + ".json", "application/json");
+  });
+})();
+</script>
+</body>
+</html>

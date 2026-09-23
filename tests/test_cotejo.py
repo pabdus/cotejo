@@ -84,6 +84,17 @@ class TestExtraccion(unittest.TestCase):
         c = extraccion.extraer("T-760 de 2008, Magistrado Ponente: Manuel José Cepeda Espinosa")[0]
         self.assertEqual(c.ponente, "Manuel José Cepeda Espinosa")
 
+    def test_ponente_nombrado_antes_de_la_cita(self):
+        c = extraccion.extraer(
+            "En este sentido, el Magistrado Rodrigo del Corral precisó en la Sentencia SU-573 de 2019 que…")[0]
+        self.assertEqual(c.ponente, "Rodrigo del Corral")
+
+    def test_el_ponente_de_una_cita_no_se_le_pega_a_la_siguiente(self):
+        citas = extraccion.extraer(
+            "Sentencia T-406 de 1992 (M.P. Ciro Angarita Barón) y la Sentencia T-760 de 2008.")
+        self.assertEqual(citas[0].ponente, "Ciro Angarita Barón")
+        self.assertIsNone(citas[1].ponente)
+
     def test_pasaje_anunciado_en_el_parrafo_anterior(self):
         texto = ("En la Sentencia T-760 de 2008 se dijo algo.\n\n"
                  "En la misma providencia la Corte precisó: “uno dos tres cuatro cinco "
@@ -111,6 +122,19 @@ class TestExtraccion(unittest.TestCase):
         pasajes = extraccion.pasajes_entre_comillas(texto)
         self.assertEqual(len(pasajes), 1)
         self.assertIn("garantía de subsistencia", pasajes[0][2])
+
+    def test_comilla_de_mas_no_deja_el_pasaje_sin_comprobar(self):
+        """El banco grande encontró 18 pasajes que se saltaban en silencio así."""
+        texto = "la Corte dijo: ““En el caso de la paciente las trombosis tienen otros factores de riesgo.”"
+        pasajes = extraccion.pasajes_entre_comillas(texto)
+        self.assertEqual(len(pasajes), 1)
+        self.assertIn("factores de riesgo", pasajes[0][2])
+
+    def test_comilla_sin_cerrar_no_cruza_parrafos(self):
+        texto = "Dijo: “uno dos tres cuatro cinco seis siete ocho\n\nOtro párrafo con “una cita cerrada de verdad aquí”."
+        pasajes = extraccion.pasajes_entre_comillas(texto)
+        self.assertEqual(len(pasajes), 1)
+        self.assertEqual(pasajes[0][2], "una cita cerrada de verdad aquí")
 
     def test_comillas_rectas(self):
         pasajes = extraccion.pasajes_entre_comillas('dijo "uno dos tres cuatro cinco seis" y "otra cosa más larga aquí"')
@@ -296,6 +320,21 @@ class TestFuente(unittest.TestCase):
         self.assertEqual(cc.url_relatoria("T", "406", 1992),
                          "https://www.corteconstitucional.gov.co/relatoria/1992/T-406-92.htm")
 
+    def test_las_de_unificacion_van_sin_guion_en_la_relatoria(self):
+        """Las 280 SU consultadas en la evaluación daban todas «no existe»."""
+        self.assertEqual(cc.url_relatoria("SU", "214", 2023),
+                         "https://www.corteconstitucional.gov.co/relatoria/2023/SU214-23.htm")
+        self.assertEqual(len(cc.urls_relatoria("SU", "214", 2023)), 2,
+                         "las SU prueban la otra forma como respaldo")
+        self.assertEqual(len(cc.urls_relatoria("T", "406", 1992)), 1,
+                         "las T no: duplicaría la carga sobre el servidor")
+
+    def test_reconoce_la_sentencia_con_cualquier_separador(self):
+        relleno = " texto" * 600
+        self.assertTrue(cc._parece_la_sentencia("SU.214/16" + relleno, "SU", "214"))
+        self.assertTrue(cc._parece_la_sentencia("SU214-23" + relleno, "SU", "214"))
+        self.assertFalse(cc._parece_la_sentencia("SU2140-23" + relleno, "SU", "214"))
+
     def test_reconoce_la_pagina_de_no_encontrado(self):
         """La relatoría responde 200 también para lo que no existe."""
         self.assertFalse(cc._parece_la_sentencia("CORTE CONSTITUCIONAL " * 50, "T", "999"))
@@ -304,6 +343,52 @@ class TestFuente(unittest.TestCase):
         self.assertFalse(cc._parece_la_sentencia(
             "Sentencia T-407/92 " + "texto " * 600, "T", "406"),
             "una página larga que no menciona el número no cuenta")
+
+
+class TestRelatoriaCaida(unittest.TestCase):
+    """El sitio de la Corte cortó la conexión a esta máquina tras ~800 peticiones."""
+
+    def setUp(self):
+        self._orig = (cc._fallos_seguidos, cc._cortado_hasta)
+        cc._fallos_seguidos, cc._cortado_hasta = 0, 0.0
+        self.tmp = Path(__file__).resolve().parents[1] / ".cache" / "pruebas"
+        self.env = mock.patch.dict(os.environ, {"COTEJO_CACHE": str(self.tmp)})
+        self.env.start()
+
+    def tearDown(self):
+        self.env.stop()
+        cc._fallos_seguidos, cc._cortado_hasta = self._orig
+        import shutil
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _cortado(self):
+        import urllib.error
+        return mock.patch.object(cc.urllib.request, "urlopen",
+                                 side_effect=urllib.error.URLError("EOF en TLS"))
+
+    def test_un_corte_de_conexion_es_una_excepcion_no_un_no_existe(self):
+        with self._cortado(), mock.patch.object(cc.time, "sleep"):
+            with self.assertRaises(cc.RelatoriaNoDisponible):
+                cc.texto_relatoria("T", "999", 2019)
+
+    def test_el_cortacircuitos_deja_de_insistir(self):
+        with self._cortado() as urlopen, mock.patch.object(cc.time, "sleep"):
+            for n in (997, 998, 999):
+                with self.assertRaises(cc.RelatoriaNoDisponible):
+                    cc.texto_relatoria("T", str(n), 2019)
+            llamadas = urlopen.call_count
+            self.assertFalse(cc.relatoria_disponible())
+            with self.assertRaises(cc.RelatoriaNoDisponible):
+                cc.texto_relatoria("T", "996", 2019)
+            self.assertEqual(urlopen.call_count, llamadas, "no debe volver a llamar")
+
+    def test_con_la_relatoria_caida_nunca_sale_no_existe(self):
+        indice = cc.Indice(FILAS)
+        with self._cortado(), mock.patch.object(cc.time, "sleep"):
+            inf = verificacion.verificar("Sentencia T-999 de 2019.", indice=indice)
+        h = inf.hallazgos[0]
+        self.assertEqual(h.estado, Estado.SIN_CONFIRMAR)
+        self.assertIn("2010-09-23", h.motivo, "dice hasta dónde llega el índice")
 
 
 # =============================================================== informe

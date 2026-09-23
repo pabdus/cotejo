@@ -1,0 +1,58 @@
+Índice: 29474 providencias
+
+Descargando 60 sentencias de la relatoría (1 petición por segundo)...
+
+========================================================================
+PASAJES — 60 sentencias × 8 variantes
+========================================================================
+variante     esperado       coincide     difiere  no_aparece  sin_pasaje demasiado_c   acierto
+literal      coincide             58           0           0           2           0    96.7 %
+ruido        coincide             58           0           0           2           0    96.7 %
+elision      coincide             57           0           0           3           0    95.0 %
+negacion     difiere               0          58           0           2           0    96.7 %
+sustitucion  difiere               0          58           0           2           0    96.7 %
+omision      difiere               0          58           0           2           0    96.7 %
+cruzado      no_aparece            0           0          57           3           0    95.0 %
+barajado     no_aparece            0           0          58           2           0    96.7 %
+
+Acierto global: 462/480 (96.2 %)
+Alteraciones dadas por buenas (lo grave): 0
+
+Fallos, para mirarlos uno a uno:
+    ('cruzado', 'T-304/25', 'sin_pasaje', None, 'Es un derecho que permite que la persona no tenga que trabajar toda su vida, pese al desgaste de los años. 88.Según el e')
+    ('cruzado', 'T-452/13', 'sin_pasaje', None, '“También se pueden agenciar derechos ajenos cuando el titular de los mismos no esté en condiciones de promover su propia')
+    ('literal', 'T-185/04', 'sin_pasaje', None, '“En el caso de la paciente las trombosis presentadas tienen otros factores de riesgo que seguramente contribuyen a su en')
+    ('ruido', 'T-185/04', 'sin_pasaje', None, '“en el caso de la paciente las trombosis presentadas tienen otros factores de riesgo que seguramente contribuyen a su en')
+    ('elision', 'T-185/04', 'sin_pasaje', None, '“En el caso de la paciente (...) factores de riesgo que seguramente contribuyen a su enfermedad.')
+    ('negacion', 'T-185/04', 'sin_pasaje', None, '“En el caso de la paciente las trombosis presentadas no tienen otros factores de riesgo que seguramente contribuyen a su')
+    ('sustitucion', 'T-185/04', 'sin_pasaje', None, '“En el caso de la paciente las trombosis presentadas tienen otros factores de podido que seguramente contribuyen a su en')
+    ('omision', 'T-185/04', 'sin_pasaje', None, '“En el caso de la paciente las presentadas tienen otros factores de riesgo que seguramente contribuyen a su enfermedad.')
+    ('barajado', 'T-185/04', 'sin_pasaje', None, 'paciente trombosis enfermedad. de otros las su riesgo seguramente de contribuyen “En el que a la presentadas factores ti')
+    ('literal', 'T-371/22', 'sin_pasaje', None, '“el actual modelo de ordenamiento constitucional reconoce valor normativo a los preceptos superiores, de modo tal que co')
+    ('ruido', 'T-371/22', 'sin_pasaje', None, '“el actual modelo de ordenamiento constitucional reconoce valor normativo a los preceptos superiores de modo tal que con')
+    ('elision', 'T-371/22', 'sin_pasaje', None, '“el actual modelo de ordenamiento constitucional reconoce valor normativo a los (...) y previsiones de aplicación direct')
+
+Preparando 600 casos de existencia...
+  50/600  (21 s)
+  100/600  (41 s)
+  150/600  (71 s)
+  200/600  (97 s)
+  250/600  (125 s)
+  300/600  (155 s)
+  350/600  (181 s)
+  400/600  (205 s)
+  450/600  (229 s)
+  500/600  (253 s)
+  550/600  (281 s)
+  600/600  (302 s)
+
+========================================================================
+EXISTENCIA — 600 casos (300 reales, 300 inventadas)
+========================================================================
+              verificada con_observac    no_existe sin_confirma no_verificab  no_extraida
+real                 300            0            0            0            0            0
+inventada              1            0          299            0            0            0
+
+Reales dadas por inexistentes (lo grave): 0 de 300
+Inventadas detectadas: 299 de 299 (100.0 %)
+Huecos del índice oficial (inventadas que la relatoría sí tiene): 1 -> ['T-281/26']
