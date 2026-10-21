@@ -16,6 +16,17 @@ venv/
 *.log
 salidas/
 
+# Demo en AWS: paquete de la Lambda, estado y configuración local de Terraform
+build/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+infra/backend.hcl
+infra/sonda/sonda.zip
+infra/sonda/salida_*.json
+demo/pagina/muestra.json
+
 # Ajustes personales de Claude Code
 .claude/settings.local.json
 

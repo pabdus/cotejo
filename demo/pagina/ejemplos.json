@@ -1,0 +1,433 @@
+{
+ "generado": "2026-10-20",
+ "commit": "cd8cd43-sucio",
+ "ejemplos": [
+  {
+   "id": "limpio",
+   "titulo": {
+    "es": "Escrito limpio",
+    "en": "Clean brief"
+   },
+   "descripcion": {
+    "es": "Tres providencias reales (T-406/92, T-760/08 y SC5686-2018), con su ponente y pasajes copiados de la sentencia. Incluye un número de expediente, que no es una sentencia.",
+    "en": "Three real rulings (T-406/92, T-760/08 and SC5686-2018), with their reporting justice and passages copied from the ruling. It also has a case-file number, which is not a ruling."
+   },
+   "texto": "FUNDAMENTOS JURÍDICOS\n\n1. Procedencia de la acción de tutela. La accionante interpuso la acción dentro del expediente T-7.123.456 y no cuenta con otro medio de defensa eficaz. La Corte Constitucional ha explicado el papel del juez en este escenario desde sus primeras decisiones. En la Sentencia T-406 de 1992 (M.P. Ciro Angarita Barón) sostuvo: “De lo dicho se deriva la idea de que el juez, en el Estado social de derecho también es un portador de la visión institucional del interés general”.\n\n2. El derecho a la salud. La Sentencia T-760 de 2008 (M.P. Manuel José Cepeda Espinosa) recogió la evolución de la jurisprudencia y concluyó que “el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional”. En el mismo fallo precisó que el “derecho a acceder a los servicios de salud que se requieren, supone el derecho al examen diagnóstico que permita establecer si se requiere o no un servicio”.\n\n3. Responsabilidad por actividades peligrosas. En materia civil, la Corte Suprema de Justicia, en la sentencia SC5686-2018 (M.P. Margarita Cabello Blanco), reiteró que “estas llamadas actividades peligrosas llevan en sí la posibilidad inminente de causar con su ejercicio daños a terceros, aunque se desarrollen con suma prudencia”.\n",
+   "respuesta": {
+    "informe": {
+     "documento": "Texto pegado",
+     "palabras": 215,
+     "resumen": {
+      "verificada": 3,
+      "con_observaciones": 0,
+      "no_existe": 0,
+      "no_encontrada": 0,
+      "sin_confirmar": 0,
+      "no_verificable": 0
+     },
+     "hallazgos": [
+      {
+       "clave": "T-406/1992",
+       "estado": "verificada",
+       "citado_como": [
+        "T-406 de 1992"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": {
+        "id": "T-406/92",
+        "tipo": "T",
+        "numero": "406",
+        "anio": 1992,
+        "fecha": "1992-06-05",
+        "ponente": "Ciro Angarita Baron",
+        "sala": "Salas de Revisión",
+        "proceso": "Tutela",
+        "url": "https://www.corteconstitucional.gov.co/relatoria/1992/T-406-92.htm"
+       },
+       "fuente": "indice",
+       "motivo": null,
+       "observaciones": [],
+       "ponentes_citados": [
+        "Ciro Angarita Barón"
+       ],
+       "pasajes": [
+        {
+         "pasaje": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho también es un portador de la visión institucional del interés general",
+         "estado": "coincide",
+         "puntuacion": 100.0,
+         "fragmentos": [
+          {
+           "fragmento": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho también es un portador de la visión institucional del interés general",
+           "puntuacion": 100.0,
+           "mas_parecido": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho también es un portador de la visión institucional del interés general",
+           "diferencias": []
+          }
+         ]
+        }
+       ],
+       "posibles": []
+      },
+      {
+       "clave": "T-760/2008",
+       "estado": "verificada",
+       "citado_como": [
+        "T-760 de 2008"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": {
+        "id": "T-760/08",
+        "tipo": "T",
+        "numero": "760",
+        "anio": 2008,
+        "fecha": "2008-07-31",
+        "ponente": "Manuel José Cepeda Espinosa",
+        "sala": "Salas de Revisión",
+        "proceso": "Tutela",
+        "url": "https://www.corteconstitucional.gov.co/relatoria/2008/T-760-08.htm"
+       },
+       "fuente": "indice",
+       "motivo": null,
+       "observaciones": [],
+       "ponentes_citados": [
+        "Manuel José Cepeda Espinosa"
+       ],
+       "pasajes": [
+        {
+         "pasaje": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+         "estado": "coincide",
+         "puntuacion": 100.0,
+         "fragmentos": [
+          {
+           "fragmento": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+           "puntuacion": 100.0,
+           "mas_parecido": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+           "diferencias": []
+          }
+         ]
+        },
+        {
+         "pasaje": "derecho a acceder a los servicios de salud que se requieren, supone el derecho al examen diagnóstico que permita establecer si se requiere o no un servicio",
+         "estado": "coincide",
+         "puntuacion": 100.0,
+         "fragmentos": [
+          {
+           "fragmento": "derecho a acceder a los servicios de salud que se requieren, supone el derecho al examen diagnóstico que permita establecer si se requiere o no un servicio",
+           "puntuacion": 100.0,
+           "mas_parecido": "derecho a acceder a los servicios de salud que se requieren, supone el derecho al examen diagnóstico que permita establecer si se requiere o no un servicio",
+           "diferencias": []
+          }
+         ]
+        }
+       ],
+       "posibles": []
+      },
+      {
+       "clave": "SC5686-2018",
+       "estado": "verificada",
+       "citado_como": [
+        "SC5686-2018"
+       ],
+       "tribunal": "Corte Suprema de Justicia",
+       "providencia": {
+        "id": "SC5686-2018",
+        "prefijo": "SC",
+        "numero": "5686",
+        "anio": 2018,
+        "sala": "CIVIL",
+        "clase": "SENTENCIA",
+        "ponentes": [
+         "Margarita Cabello Blanco"
+        ],
+        "documentos": [
+         "/var/www/html/Index/CIVIL/2018/Dra. Margarita Cabello Blanco/12. Diciembre/Sentencias/SC5686-2018 [2004-00042-01] .doc",
+         "/var/www/html/Index/CIVIL/2018/Dra. Margarita Cabello Blanco/12. Diciembre/Sentencias/SC5686-2018 [2004-00042-01].pdf"
+        ],
+        "fecha": null,
+        "ponente": "Margarita Cabello Blanco",
+        "url": "https://consultaprovidencias.cortesuprema.gov.co/#/visualizador/L3Zhci93d3cvaHRtbC9JbmRleC9DSVZJTC8yMDE4L0RyYS4gTWFyZ2FyaXRhIENhYmVsbG8gQmxhbmNvLzEyLiBEaWNpZW1icmUvU2VudGVuY2lhcy9TQzU2ODYtMjAxOCBbMjAwNC0wMDA0Mi0wMV0gLmRvYw==/CIVIL/SC5686-2018"
+       },
+       "fuente": "corte_suprema",
+       "motivo": null,
+       "observaciones": [],
+       "ponentes_citados": [
+        "Margarita Cabello Blanco"
+       ],
+       "pasajes": [
+        {
+         "pasaje": "estas llamadas actividades peligrosas llevan en sí la posibilidad inminente de causar con su ejercicio daños a terceros, aunque se desarrollen con suma prudencia",
+         "estado": "coincide",
+         "puntuacion": 100.0,
+         "fragmentos": [
+          {
+           "fragmento": "estas llamadas actividades peligrosas llevan en sí la posibilidad inminente de causar con su ejercicio daños a terceros, aunque se desarrollen con suma prudencia",
+           "puntuacion": 100.0,
+           "mas_parecido": "Estas llamadas actividades peligrosas llevan en sí la posibilidad inminente de causar con su ejercicio daños a terceros, aunque se desarrollen con suma prudencia",
+           "diferencias": []
+          }
+         ]
+        }
+       ],
+       "posibles": []
+      }
+     ]
+    },
+    "segundos": 0.62,
+    "restantes": null,
+    "indice": {
+     "providencias": 29474,
+     "hasta": "2026-08-31"
+    },
+    "peticiones": {
+     "relatoria": 0,
+     "corte_suprema": 0
+    },
+    "cortado_por_tiempo": false,
+    "cortado_por_tope": false
+   }
+  },
+  {
+   "id": "inventadas",
+   "titulo": {
+    "es": "Sentencias inventadas",
+    "en": "Invented rulings"
+   },
+   "descripcion": {
+    "es": "Fundamentos jurídicos de una tutela redactados por un modelo de lenguaje pequeño (qwen3.5:9b, en local), sin tocar. Cita cinco sentencias de unificación.",
+    "en": "The legal grounds of a tutela claim written by a small language model (qwen3.5:9b, run locally), untouched. It cites five unification rulings."
+   },
+   "texto": "**FUNDAMENTOS JURÍDICOS**\n\n1. El derecho a la vida digna y al mínimo vital es un principio rector del ordenamiento colombiano consagrado en los artículos 1°, 2° y 79 de la Constitución Política, así como en el artículo 48 de la misma. Para las personas de la tercera edad, este mandato constitucional se torna imperativo debido a su condición de población vulnerable que requiere protección especial por parte del Estado. La Corte Constitucional ha establecido reiteradamente que la vejez no es un estado de desamparo, sino una etapa de la vida que exige garantías especiales para garantizar la autonomía, el respeto y la dignidad humana.\n\nEn este sentido, la sentencia SU-214 de 2013, proferida por el ponente Juan Carlos Gaviria Daza, sentó un precedente al declarar que \"la vejez es una etapa de la vida que merece protección especial por parte del Estado y de la sociedad\" (pág. 9). De igual forma, en la sentencia SU-210 de 2008, el ponente Humberto Antonio Sierra Porto afirmó que \"el mínimo vital no es un favor, sino una prestación que corresponde a toda persona que se encuentre en situación de necesidad\", subrayando que la privación de este derecho afecta directamente el núcleo duro de la dignidad humana.\n\nAsimismo, la sentencia SU-076 de 2015, con ponencia del magistrado Rodrigo Escobar Gil, precisó que \"la vejez es un estado de vulnerabilidad que exige una atención prioritaria por parte del Estado\", obligándolo a asegurar los ingresos mínimos necesarios para subsistir. Por su parte, la sentencia SU-467 de 2019, firmada por el ponente Luis Guillermo Guerrero Pérez, reafirmó que \"la dignidad humana es el principio rector que inspira toda la acción estatal y judicial\", exigiendo a las entidades responsables cumplir puntualmente con los pagos pensionales. Finalmente, en la sentencia SU-1385 de 2018, el ponente Mauricio González Cuervo reiteró que \"el Estado debe garantizar la protección integral a las personas mayores\", especialmente cuando estas carecen de recursos propios o dependen exclusivamente de su pensión.\n\nLa acción de tutela es el mecanismo idóneo para resarcir los derechos violados en este caso, dado que la falta de pago de la pensión configura una amenaza directa al derecho a la vida y al mínimo vital. La inacción del Estado o la entidad causante del incumplimiento convierte a la protección judicial en la única vía para evitar el deterioro físico y mental del solicitante. En consecuencia, corresponde ordenar de inmediato el pago de los saldos vencidos de la pensión y el establecimiento de un mecanismo de control que asegure el cumplimiento futuro, restableciendo así la dignidad y la integridad personal de la persona mayor demandante.\n",
+   "respuesta": {
+    "informe": {
+     "documento": "Texto pegado",
+     "palabras": 432,
+     "resumen": {
+      "verificada": 0,
+      "con_observaciones": 0,
+      "no_existe": 5,
+      "no_encontrada": 0,
+      "sin_confirmar": 0,
+      "no_verificable": 0
+     },
+     "hallazgos": [
+      {
+       "clave": "SU-214/2013",
+       "estado": "no_existe",
+       "citado_como": [
+        "SU-214 de 2013"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": null,
+       "fuente": null,
+       "motivo": "no figura en el índice oficial de la Corte ni en su relatoría",
+       "observaciones": [],
+       "ponentes_citados": [],
+       "pasajes": [],
+       "posibles": []
+      },
+      {
+       "clave": "SU-210/2008",
+       "estado": "no_existe",
+       "citado_como": [
+        "SU-210 de 2008"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": null,
+       "fuente": null,
+       "motivo": "no figura en el índice oficial de la Corte ni en su relatoría",
+       "observaciones": [],
+       "ponentes_citados": [],
+       "pasajes": [],
+       "posibles": []
+      },
+      {
+       "clave": "SU-076/2015",
+       "estado": "no_existe",
+       "citado_como": [
+        "SU-076 de 2015"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": null,
+       "fuente": null,
+       "motivo": "no figura en el índice oficial de la Corte ni en su relatoría",
+       "observaciones": [],
+       "ponentes_citados": [],
+       "pasajes": [],
+       "posibles": []
+      },
+      {
+       "clave": "SU-467/2019",
+       "estado": "no_existe",
+       "citado_como": [
+        "SU-467 de 2019"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": null,
+       "fuente": null,
+       "motivo": "no figura en el índice oficial de la Corte ni en su relatoría",
+       "observaciones": [],
+       "ponentes_citados": [],
+       "pasajes": [],
+       "posibles": []
+      },
+      {
+       "clave": "SU-1385/2018",
+       "estado": "no_existe",
+       "citado_como": [
+        "SU-1385 de 2018"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": null,
+       "fuente": null,
+       "motivo": "no figura en el índice oficial de la Corte ni en su relatoría",
+       "observaciones": [],
+       "ponentes_citados": [],
+       "pasajes": [],
+       "posibles": []
+      }
+     ]
+    },
+    "segundos": 0.02,
+    "restantes": null,
+    "indice": {
+     "providencias": 29474,
+     "hasta": "2026-08-31"
+    },
+    "peticiones": {
+     "relatoria": 0,
+     "corte_suprema": 0
+    },
+    "cortado_por_tiempo": false,
+    "cortado_por_tope": false
+   }
+  },
+  {
+   "id": "pasaje_alterado",
+   "titulo": {
+    "es": "Pasaje alterado",
+    "en": "Altered passage"
+   },
+   "descripcion": {
+    "es": "Cita la T-406/92 con una sola palabra cambiada: «no es» donde la sentencia dice «también es». La T-760/08 está bien citada.",
+    "en": "Quotes T-406/92 with one word changed: «no es» (is not) where the ruling says «también es» (is also). T-760/08 is quoted correctly."
+   },
+   "texto": "FUNDAMENTOS JURÍDICOS\n\n1. Límites del juez constitucional. La entidad accionada no discute los hechos, sino el alcance de la competencia del juez. Al respecto, la Corte Constitucional, en la Sentencia T-406 de 1992 (M.P. Ciro Angarita Barón), advirtió: “De lo dicho se deriva la idea de que el juez, en el Estado social de derecho no es un portador de la visión institucional del interés general”. Por ello, no le corresponde al juez de tutela ordenar prestaciones que el legislador no ha previsto.\n\n2. El derecho a la salud. Con todo, la Sentencia T-760 de 2008 (M.P. Manuel José Cepeda Espinosa) señaló que “el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional”.\n",
+   "respuesta": {
+    "informe": {
+     "documento": "Texto pegado",
+     "palabras": 130,
+     "resumen": {
+      "verificada": 1,
+      "con_observaciones": 1,
+      "no_existe": 0,
+      "no_encontrada": 0,
+      "sin_confirmar": 0,
+      "no_verificable": 0
+     },
+     "hallazgos": [
+      {
+       "clave": "T-406/1992",
+       "estado": "con_observaciones",
+       "citado_como": [
+        "T-406 de 1992"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": {
+        "id": "T-406/92",
+        "tipo": "T",
+        "numero": "406",
+        "anio": 1992,
+        "fecha": "1992-06-05",
+        "ponente": "Ciro Angarita Baron",
+        "sala": "Salas de Revisión",
+        "proceso": "Tutela",
+        "url": "https://www.corteconstitucional.gov.co/relatoria/1992/T-406-92.htm"
+       },
+       "fuente": "indice",
+       "motivo": null,
+       "observaciones": [
+        "Un pasaje entre comillas no coincide literalmente con la providencia: el escrito dice «no» donde la sentencia dice «también»."
+       ],
+       "ponentes_citados": [
+        "Ciro Angarita Barón"
+       ],
+       "pasajes": [
+        {
+         "pasaje": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho no es un portador de la visión institucional del interés general",
+         "estado": "difiere",
+         "puntuacion": 96.4,
+         "fragmentos": [
+          {
+           "fragmento": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho no es un portador de la visión institucional del interés general",
+           "puntuacion": 96.4,
+           "mas_parecido": "De lo dicho se deriva la idea de que el juez, en el Estado social de derecho también es un portador de la visión institucional del interés general",
+           "diferencias": [
+            {
+             "escrito": "no",
+             "sentencia": "también"
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "posibles": []
+      },
+      {
+       "clave": "T-760/2008",
+       "estado": "verificada",
+       "citado_como": [
+        "T-760 de 2008"
+       ],
+       "tribunal": "Corte Constitucional",
+       "providencia": {
+        "id": "T-760/08",
+        "tipo": "T",
+        "numero": "760",
+        "anio": 2008,
+        "fecha": "2008-07-31",
+        "ponente": "Manuel José Cepeda Espinosa",
+        "sala": "Salas de Revisión",
+        "proceso": "Tutela",
+        "url": "https://www.corteconstitucional.gov.co/relatoria/2008/T-760-08.htm"
+       },
+       "fuente": "indice",
+       "motivo": null,
+       "observaciones": [],
+       "ponentes_citados": [
+        "Manuel José Cepeda Espinosa"
+       ],
+       "pasajes": [
+        {
+         "pasaje": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+         "estado": "coincide",
+         "puntuacion": 100.0,
+         "fragmentos": [
+          {
+           "fragmento": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+           "puntuacion": 100.0,
+           "mas_parecido": "el derecho a la salud es un derecho fundamental, así sea considerado usualmente por la doctrina como un derecho social y, además, tenga una importante dimensión prestacional",
+           "diferencias": []
+          }
+         ]
+        }
+       ],
+       "posibles": []
+      }
+     ]
+    },
+    "segundos": 0.41,
+    "restantes": null,
+    "indice": {
+     "providencias": 29474,
+     "hasta": "2026-08-31"
+    },
+    "peticiones": {
+     "relatoria": 0,
+     "corte_suprema": 0
+    },
+    "cortado_por_tiempo": false,
+    "cortado_por_tope": false
+   }
+  }
+ ]
+}
