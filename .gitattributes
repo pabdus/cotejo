@@ -1,0 +1,6 @@
+# La página de la demo se copia tal cual al portafolio y su prueba exige LF
+# (tests/test_pagina.py): con core.autocrlf=true, un clon nuevo la dejaría en CRLF.
+demo/pagina/*.html text eol=lf
+demo/pagina/*.css  text eol=lf
+demo/pagina/*.js   text eol=lf
+demo/pagina/*.py   text eol=lf
