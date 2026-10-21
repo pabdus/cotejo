@@ -1,0 +1,5 @@
+# Copia este archivo como backend.hcl (no se versiona) con el bucket de estado del portafolio
+# (el que crea infra/bootstrap en el repositorio del portafolio). La clave ya va en versions.tf.
+bucket  = "portafolio-tfstate-XXXXXX"
+region  = "us-east-1"
+profile = "default"
