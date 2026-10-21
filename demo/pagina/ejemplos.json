@@ -1,6 +1,6 @@
 {
  "generado": "2026-10-20",
- "commit": "cd8cd43-sucio",
+ "commit": "fb99567",
  "ejemplos": [
   {
    "id": "limpio",
@@ -171,7 +171,7 @@
       }
      ]
     },
-    "segundos": 0.62,
+    "segundos": 0.58,
     "restantes": null,
     "indice": {
      "providencias": 29474,
@@ -286,7 +286,7 @@
       }
      ]
     },
-    "segundos": 0.02,
+    "segundos": 0.03,
     "restantes": null,
     "indice": {
      "providencias": 29474,
@@ -415,7 +415,7 @@
       }
      ]
     },
-    "segundos": 0.41,
+    "segundos": 0.42,
     "restantes": null,
     "indice": {
      "providencias": 29474,
