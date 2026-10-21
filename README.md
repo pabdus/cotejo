@@ -185,7 +185,9 @@ salía en la posición 149 de 155), así que se buscan desde el final.
 .venv\Scripts\python -m unittest discover -s tests -v
 ```
 
-88 pruebas sin red. Con `COTEJO_RED=1`, seis más contra las fuentes reales.
+274 pruebas sin red, entre ellas las de la demo pública (`demo/`, `infra/`),
+algunas con bytes reales de la relatoría guardados en `tests/datos/`. Con
+`COTEJO_RED=1`, seis más contra las fuentes reales.
 
 ## Cortesía con los servidores públicos
 

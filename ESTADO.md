@@ -5,7 +5,8 @@ haber estado en la conversación que lo construyó. El README explica **qué**
 hace Cotejo; esto explica **por qué está hecho así** y **qué no se debe
 deshacer**.
 
-Última actualización: 23 de septiembre de 2026.
+Última actualización: 21 de octubre de 2026 (demo pública en AWS; ver
+`demo/DISEÑO.md` para su contrato y la sección «La demo pública» abajo).
 
 ---
 
@@ -17,9 +18,10 @@ deshacer**.
 | Entorno | `.venv` propio (ver «Trampas del entorno») |
 | Interfaz web | `.venv\Scripts\python servidor.py` → <http://127.0.0.1:8010> |
 | Línea de órdenes | `.venv\Scripts\python -m cotejo escrito.docx --html informe.html` |
-| Pruebas | `.venv\Scripts\python -m unittest discover -s tests` — 88, todas pasando |
+| Pruebas | `.venv\Scripts\python -m unittest discover -s tests` — 274, todas pasando (6 omitidas: las de red) |
 | Pruebas con red | `COTEJO_RED=1` delante — 6 más, contra las fuentes reales |
 | Evaluación | `evaluacion/banco.py`, `banco_csj.py` y `escritos_llm.py` |
+| Demo pública | `demo/` (Lambda) e `infra/` (Terraform); contrato en `demo/DISEÑO.md` |
 
 Qué es: un verificador de citas jurisprudenciales. Lee un escrito, extrae las
 citas y comprueba cada una contra las fuentes oficiales de la Corte
@@ -46,6 +48,20 @@ evaluacion/
   banco.py                       Constitucional: etiquetas conocidas por construcción
   banco_csj.py                   Corte Suprema: ¿cuántas reales no encuentra el buscador?
   escritos_llm.py                Escritos redactados por un LLM, para auditar
+demo/
+  DISEÑO.md                      Contrato de la demo pública, ronda a ronda
+  lambda_function.py             Handler de la Function URL: rutas, topes, sonda
+  cuota.py                       Límite por IP (HMAC con sal y fecha) y topes diarios
+  espejo.py                      Caché de 30 días en S3 alrededor de .cache/
+  empaquetar.py                  build/lambda.zip y build/indice.json.gz
+  exportar_ejemplos.py           Los 3 ejemplos de la página, con su veredicto comprobado
+  local.py                       La misma Lambda en 127.0.0.1:8011, sin AWS
+  ejemplos/                      Limpio, sentencias inventadas, pasaje alterado
+  pagina/                        La página del portafolio (borrador) y su vista previa
+infra/
+  *.tf                           Terraform de la demo (estado remoto en S3)
+  freno/handler.py               Pone la concurrencia a 0 si se disparan las invocaciones
+tests/datos/                     Bytes reales de la relatoría para las pruebas sin red
 ```
 
 ---
@@ -121,20 +137,32 @@ ni lleva puntos de millar.
 
 ### 6. La relatoría responde 200 también para lo que no existe
 
-Devuelve una página casi vacía en vez de un 404. Se reconoce por longitud
-**y** porque no menciona el número de la sentencia. Antes eran ~105 palabras
+Devuelve una página casi vacía en vez de un 404. Antes eran ~105 palabras
 de cabecera; desde que el sitio se rehízo (septiembre de 2026) es la carcasa
 vacía de la aplicación, 8.607 bytes y ninguna palabra, para cualquier
 dirección desconocida.
+
+Desde octubre de 2026 la carcasa se reconoce **por su firma**
+(`cc._es_carcasa`): cero palabras **y** `<app-root>` **y** un `<title>` con
+«CORTE CONSTITUCIONAL». No basta con «cero palabras»: un desafío de cortafuegos
+hecho solo de `<script>` también las deja, y se tomaba por una ausencia. Un
+200 vacío y un 404 tampoco son una ausencia (la relatoría nunca da 404 a lo que
+no tiene; un 404 viene de un intermediario). Cualquier respuesta que no sea la
+sentencia, la nota de nulidad o la carcasa firmada lanza
+`RelatoriaNoDisponible`: «sin confirmar», y no se guarda nada. Si un día el
+sitio cambia su carcasa, las inventadas saldrán «sin confirmar» (seguro) y la
+sonda de la demo lo dirá.
 
 ### 6b. Canario antes de creer una ausencia
 
 Consecuencia de lo anterior: si el sitio cambiara su esquema de direcciones,
 TODA consulta devolvería la carcasa, y cada sentencia que aún no esté en el
-índice saldría «no existe». Antes de aceptar una ausencia se comprueba, como
-mucho una vez por hora, que la T-406/92 se sigue pudiendo leer
-(`cc.relatoria_fiable`). Si no, «sin confirmar». Lo mismo con la Corte
-Suprema y la SC5686-2018 (`cs.buscador_fiable`).
+índice saldría «no existe». Antes de aceptar una ausencia se comprueba que la
+T-406/92 se sigue pudiendo leer (`cc.relatoria_fiable`), con un canario de
+**menos de 2 minutos** (antes valía una hora: un desafío servido dentro de esa
+hora se guardaba como ausencia, y en la demo el espejo lo repartía a todos los
+contenedores). Si no, «sin confirmar». Lo mismo con la Corte Suprema y la
+SC5686-2018 (`cs.buscador_fiable`, que sigue con una hora).
 
 ### 7. La ausencia en la relatoría se recuerda solo un día
 
@@ -186,12 +214,103 @@ primeros 30 KB de la página de cada sentencia verificada (cabecera `Range`;
 el servidor responde 206) y recuerda la respuesta 30 días: una sentencia
 puede anularse un año después.
 
+Lo que se aprendió después (octubre de 2026):
+- **Páginas de Word con cabecera enorme.** La C-355/06, la SU-214/16 y la
+  SU-1073/12 traen más de 30 KB de `<style>` antes del texto: con 30 KB queda
+  una palabra. Si la primera ventana se llena sin reconocerse, se pide una
+  segunda de 300 KB (basta para las tres, medido), y solo si esa tampoco basta,
+  la página entera (la C-355/06 son 3,4 MB). `texto_relatoria`, que ya baja la
+  página entera para los pasajes, deja la nota escrita de paso.
+- **Nulidad parcial.** La SU-1073/12 perdió dos numerales y su texto sigue en
+  su sitio; `/Anuladas/` tiene la carcasa. Se usa el texto original y el
+  informe dice «ANULADA PARCIALMENTE».
+- **La nulidad se busca en el párrafo de la nota**, en cada «NOTA DE
+  RELATORÍA» del principio. Detrás vienen los descriptores, que pueden hablar
+  de cualquier nulidad, y la relatoría añade notas de corrección o de
+  anonimización años después.
+- **Una nota de nulidad guardada no caduca**; el «no anulada» sí, a los 30 días.
+- **Si no se pudo mirar, se dice.** Un fallo al consultar la nulidad añade la
+  observación «No se pudo comprobar si la sentencia fue anulada» (queda «con
+  observaciones»). Antes salía «verificada» en silencio, también la SU-163/23
+  con la relatoría dando 403.
+
 ### 13. Del texto de un PDF solo se cree lo que coincide
 
 Algunas providencias de la Corte Suprema solo están en PDF, a veces con un OCR
 ilegible. Si un pasaje coincide ahí, coincide; si no, puede ser el OCR, y
 marcarlo como alterado sería acusar al escrito de algo que no hizo. Esos
 pasajes quedan «sin comprobar», dicho así.
+
+### 14. Una sentencia reciente que falta en las dos fuentes es «no encontrada»
+
+El índice de datos.gov.co va con semanas de retraso (en octubre de 2026 llega al
+31 de agosto) y la relatoría tarda semanas o meses en publicar algunas C y SU.
+Una sentencia real de septiembre puede faltar en las dos, y salía «no existe»:
+con el índice recortado al 12-08, la C-273/26 y la SU-261/26, reales, lo daban.
+`cc.Indice.quiza_reciente` decide si el número puede ser de una sentencia aún
+sin publicar: lo dictado hasta 60 días antes del final del índice está
+asentado (si ahí falta, significa algo); por encima, solo es imposible si pasa
+de lo que da el ritmo de la Corte con margen (el doble, más 20 números), con
+mínimo de una sentencia al día, contando T, C y SU juntas (comparten serie desde
+2023) y, para un año cerrado, solo hasta su 31 de diciembre. Simulado con el
+índice real recortado cada día de 2024 a 2026: ninguna sentencia real que
+faltara en el recorte se quedó sin motivo. Si puede ser reciente, el estado es
+`NO_ENCONTRADA` (pide comprobarla, no afirma nada). El precio: hoy, un número
+inventado de 2026 entre el 202 y el 534 sale «no encontrada» y no «no existe».
+Las inventadas de los escritos del LLM no cambian (0 de 63).
+
+### 15. El cortacircuitos también ve los bloqueos que llegan con 200
+
+Un 403, una redirección y una respuesta de más de 16 MB son fallos del servicio
+(sin reintentar). Una página de desafío llega con 200, y `pedir()` ponía los
+fallos a 0 en cada una: el cortacircuitos no se abría nunca. Quien lee la
+respuesta y no la reconoce llama a `Cliente.respuesta_irreconocible()`, que
+corta igual a la tercera seguida. «La relatoría no tiene publicada su página»
+no cuenta: no es culpa del servidor.
+
+### 16. Plazo y tope por verificación
+
+`verificar(hasta=..., max_consultadas=...)`. El plazo llega al cliente HTTP
+(`Cliente.hasta`): ni una pausa, ni un intento, ni un trozo del cuerpo empiezan
+si no caben, y quedarse sin tiempo (`SinTiempo`) no cuenta para el
+cortacircuitos. Lo que no se alcanzó a consultar sale «sin confirmar» con el
+motivo, nunca se omite (decisión 9). El tope existe porque un texto con cientos
+de sentencias inventadas hacía decenas de peticiones a la relatoría con una
+sola consulta. Sin plazo ni tope (los bancos, la interfaz local) todo sigue
+como antes.
+
+### 17. Las claves de la Constitucional van normalizadas
+
+«T-25 de 2004» y «T-025 de 2004» son la misma providencia (`T-025/2004`): antes
+salían dos hallazgos y contaban dos veces para los topes. La Corte Suprema ya
+se normalizaba.
+
+---
+
+## La demo pública
+
+`demo/DISEÑO.md` es el contrato completo, con el porqué de cada decisión y lo
+que se encontró en cada una de las cuatro rondas de revisión adversarial. Lo
+esencial:
+
+- Lambda con Function URL en la cuenta personal (perfil `default`, us-east-1).
+  Recibe un texto pegado de hasta 5.000 caracteres y devuelve el informe en JSON.
+  La página está en `pabloduque.dev/lab/cotejo.html` (borrador en `demo/pagina/`).
+- Antes de construir se midió desde Lambdas de prueba en us-east-1 y sa-east-1
+  (20-10-2026): la relatoría, datos.gov.co y el buscador de la Corte Suprema
+  responden a las IP de AWS. Sin bloqueos.
+- Límites: 3 consultas por IP al día (HMAC-SHA256 de la IP con sal secreta y la
+  fecha, IPv6 por su /64, TTL de 2 días; nunca la IP en claro), 100 consultas y
+  600 peticiones a las fuentes al día en total, 40 providencias por texto y 15
+  consultadas, 60 s de plazo. Concurrencia reservada 1: la pausa de cortesía
+  vive en la memoria de cada contenedor, y con dos a la vez la relatoría
+  recibía el doble de ritmo.
+- Caché de 30 días en S3 (`espejo.py`) alrededor de `.cache/`, sin tocar su
+  lógica de caducidades. Las ausencias no se suben: así el error de un
+  contenedor no se reparte a los demás.
+- Costo: presupuesto de US$ 5/mes por la etiqueta `proyecto`, alarma por
+  invocaciones y un freno automático que pone la concurrencia a 0.
+- `demo/local.py` levanta la misma Lambda en local, sin AWS, para probar la página.
 
 ---
 
@@ -200,8 +319,12 @@ pasajes quedan «sin comprobar», dicho así.
 **Cotejo tiene su propio entorno virtual.** El Python global de esta máquina
 tiene starlette 1.6 (lo instaló streamlit el 14 de septiembre), que es
 incompatible con fastapi 0.115. Con el entorno propio, ningún otro proyecto
-le rompe a este las dependencias. Ojo: ese mismo conflicto tiene roto ahora
-mismo el servidor de otro proyecto, que usa el Python global.
+le rompe a este las dependencias. El paquete de la Lambda no lleva fastapi:
+solo rapidfuzz (`demo/empaquetar.py`).
+
+**Las pruebas siempre con límite de tiempo.** Una lectura por trozos contra un
+doble de prueba que nunca devuelve `b""` dejó la batería colgada; con
+`timeout 240` delante se ve enseguida.
 
 **El shell corrompe las secuencias de escape** al escribir código por
 heredoc: `\b` acaba en 0x08, que compila y deja el regex muerto sin avisar.
@@ -259,6 +382,22 @@ verifique una sentencia existente la haría si no.
    evaluación: la de qwen3.5:9b dice poco de lo que inventa un modelo grande.
 8. **Otras jurisdicciones:** Argentina, España, México. Cada una necesita su
    propio conector de datos; ese trabajo es el foso del producto.
+
+### Pendiente de la demo
+
+- **Antes de publicar el repo:** el historial de git nombra en 8 sitios el
+  proyecto del que viene `documentos.py` (ya no está en el árbol actual).
+  Publicarlo exige reescribir el historial o un repo nuevo con un solo commit.
+  Decisión de Pablo.
+- Tras el primer `apply`: lanzar la sonda, probar el freno de forma controlada,
+  confirmar la suscripción de SNS por correo, y comprobar si el 429 de la
+  Function URL (concurrencia 1 o freno) lleva cabeceras CORS. Si no las lleva,
+  la página dirá «sin conexión» donde debería decir «ocupado».
+- Huecos del tramo asentado del índice (en 2026, los números 45, 85, 129, 130 y
+  139) siguen dando «no existe» si la relatoría tampoco los tiene. No se ha
+  comprobado si alguno es una sentencia real que falta en el índice.
+- La C-355/06 en la sonda vigila la segunda ventana de la nulidad; si un día
+  deja de bastar con 300 KB, cada nulidad de una página así baja la entera.
 
 ## Lo que no se puede hacer
 
