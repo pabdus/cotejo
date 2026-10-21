@@ -302,6 +302,18 @@ def _carpeta(nombre: str) -> Path:
     return ruta
 
 
+# Públicas porque la demo replica la caché en S3 y tiene que saber de antemano
+# qué archivos va a leer cada consulta.
+def ruta_busqueda(prefijo: str, numero: str | int, anio: int) -> Path:
+    """Dónde se guarda `buscar`. Con el código canónico: «SP022» y «SP22» comparten."""
+    return _carpeta("busquedas") / f"{codigo(prefijo, numero, anio)}.json"
+
+
+def ruta_texto(ident: str) -> Path:
+    """Dónde se guarda `texto`, por `ProvidenciaCSJ.id` («SC5686-2018»)."""
+    return _carpeta("textos") / f"{ident}.txt.gz"
+
+
 def buscar(prefijo: str, numero: str | int, anio: int) -> Busqueda:
     """¿Está la providencia en la base de la Corte Suprema?
 
@@ -312,7 +324,7 @@ def buscar(prefijo: str, numero: str | int, anio: int) -> Busqueda:
     prefijo = prefijo.upper()
     if prefijo not in SALAS:
         raise ValueError(f"prefijo de la Corte Suprema desconocido: {prefijo}")
-    ruta = _carpeta("busquedas") / f"{codigo(prefijo, numero, anio)}.json"
+    ruta = ruta_busqueda(prefijo, numero, anio)
     if ruta.exists():
         guardado = json.loads(ruta.read_text(encoding="utf-8"))
         if guardado["providencia"] or time.time() - ruta.stat().st_mtime < _CADUCIDAD_AUSENCIA:
@@ -357,7 +369,7 @@ def texto(prov: ProvidenciaCSJ) -> Texto | None:
     if not prov.documentos:
         return None
     documento = prov.documentos[0]
-    ruta = _carpeta("textos") / f"{prov.id}.txt.gz"
+    ruta = ruta_texto(prov.id)
     if ruta.exists():
         with gzip.open(ruta, "rt", encoding="utf-8") as f:
             guardado = json.load(f)

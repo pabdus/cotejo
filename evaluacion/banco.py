@@ -126,7 +126,10 @@ def evaluar_existencia(indice: cc.Indice, casos, rng: random.Random) -> None:
         len(casos), sum(1 for c in casos if c[0] == "real"),
         sum(1 for c in casos if c[0] == "inventada")))
     print("=" * 72)
-    estados = ["verificada", "con_observaciones", "no_existe", "sin_confirmar",
+    # «no_encontrada» también sale aquí desde la cuarta ronda (DISEÑO §1d): una
+    # inventada de 2025 o 2026 con un número que la Corte aún pudo dictar. Sin
+    # su columna, esas desaparecían de la matriz y de los totales sin decirlo
+    estados = ["verificada", "con_observaciones", "no_existe", "no_encontrada", "sin_confirmar",
                "no_verificable", "no_extraida"]
     print("%-11s" % "" + "".join("%13s" % e[:12] for e in estados))
     for et in ("real", "inventada"):
@@ -226,7 +229,20 @@ def evaluar_pasajes(indice: cc.Indice, n: int, rng: random.Random,
         if len(elegidas) >= n:
             break
         p = indice._por_id[ident]
-        t = cc.texto_relatoria(p.tipo, p.numero, p.anio)
+        try:
+            t = cc.texto_relatoria(p.tipo, p.numero, p.anio)
+        except cc.RelatoriaNoDisponible:
+            # Desde que una página que no se reconoce lanza en vez de leerse
+            # como ausencia, esto mataba la corrida entera con todas las
+            # peticiones ya gastadas. Se cuenta, como todo lo que se descarta.
+            descartes[f"{p.tipo} sin respuesta reconocible de la relatoría"] += 1
+            if not cc.relatoria_disponible():
+                # Con el cortacircuitos abierto, las que quedan se descartarían
+                # todas por lo mismo, sin preguntar: no es una muestra
+                print(f"La relatoría dejó de responder (cortacircuitos abierto): se corta el "
+                      f"muestreo con {len(elegidas)} de {n} sentencias.")
+                break
+            continue
         if not t:
             descartes[f"{p.tipo} sin texto en la relatoría"] += 1
             continue

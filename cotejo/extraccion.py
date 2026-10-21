@@ -32,6 +32,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+# La regla del índice oficial («42» → «042»), la misma que usan las rutas de la
+# caché: una sola, para que la clave no diverja de ellas
+from .fuentes.corte_constitucional import normalizar_numero
+
 # --------------------------------------------------------------------- modelo
 CORTE_CONSTITUCIONAL = "Corte Constitucional"
 CORTE_SUPREMA = "Corte Suprema de Justicia"
@@ -73,7 +77,15 @@ class Cita:
             # «SP022-2019» y «SP22-2019» son la misma: sin ceros delante
             return f"{self.tipo}{int(self.numero)}-{self.anio}"
         if self.tipo and self.numero and self.anio:
-            return f"{self.tipo}-{self.numero.upper()}/{self.anio}"
+            # Con el número como en el índice oficial: «T-25 de 2004» y «T-025 de
+            # 2004» son la misma, la T-025/04, la más citada. Antes eran dos
+            # hallazgos y contaban dos veces para los topes de la demo, que
+            # dejaban sin consultar una tercera que sí era distinta.
+            try:
+                numero = normalizar_numero(self.numero)
+            except ValueError:
+                numero = self.numero.upper()
+            return f"{self.tipo}-{numero}/{self.anio}"
         return re.sub(r"\s+", " ", self.texto.strip())
 
 
