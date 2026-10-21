@@ -1,0 +1,203 @@
+/* Cotejo en vivo (lab/cotejo.html). Se apoya en /lab/lab.css: tokens, barra, .card, .lab-btn, .lbl, .note, .read.
+   Los colores de estado son lo único que no sale de lab.css: el ámbar no existe en la paleta del sitio, y un
+   informe de citas necesita distinguir «no existe» (rojo) de «hay que mirarlo» (ámbar) de «no se sabe» (gris).
+   Contraste WCAG 2 de cada etiqueta de estado sobre su propio fondo tintado encima de --s1, medido en el navegador
+   (el caso más justo; la cifra grande del resumen va sobre --s1 sin tinte y queda por encima):
+     oscuro  --ct-ok (--lime-ink) 9,5:1 · --ct-bad (--red) 5,3:1 · --ct-warn #e0b465 7,4:1 · --ct-na (--ink3) 5,5:1
+     claro   --ct-ok #3c6200 6,4:1 · --ct-bad #a9221d 6,3:1 · --ct-warn #8a5a0b 5,2:1 · --ct-na #555852 6,4:1
+   El ámbar es el del informe HTML de Cotejo (informe.py), para que la página y el informe impreso digan lo mismo.
+   El color nunca va solo: cada estado lleva su nombre escrito y el borde de la tarjeta lo repite. */
+:root{
+  --ct-ok:var(--lime-ink);--ct-ok-bg:var(--ok-bg);
+  --ct-bad:var(--red);--ct-bad-bg:var(--red-bg);
+  --ct-warn:#e0b465;--ct-warn-bg:rgba(224,180,101,.14);
+  --ct-na:var(--ink3);--ct-na-bg:rgba(255,255,255,.06);
+  /* resaltado de las diferencias: lo que dice el escrito (ámbar) frente a lo que dice la sentencia (lima) */
+  --ct-mk-es:rgba(224,180,101,.26);--ct-mk-real:rgba(195,230,95,.22);
+  --ct-quote:var(--ink)
+}
+html[data-theme="light"]{
+  --ct-warn:#8a5a0b;--ct-warn-bg:rgba(138,90,11,.09);
+  --ct-na-bg:rgba(12,16,22,.06);
+  --ct-mk-es:rgba(224,170,70,.32);--ct-mk-real:var(--marker);
+  --ct-quote:var(--prose)
+}
+
+.skip{position:absolute;left:-999px;top:8px;z-index:99;background:var(--lime);color:var(--on-lime);padding:8px 12px;border-radius:6px;text-decoration:none;font-family:var(--mono);font-size:12px}
+.skip:focus{left:8px}
+.ct-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* portada */
+.ct-links{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+.ct-links .lab-btn{padding:9px 13px}
+.lab .ct-why{margin:0 0 36px;max-width:780px}
+
+/* antes de pegar nada */
+.ct-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:18px 28px;margin:0 0 8px}
+.lab .ct-notes h2{grid-column:1/-1;margin:0;font-size:clamp(19px,2vw,24px)}
+.ct-note b{display:block;color:var(--ink);font-size:15px;margin:0 0 4px}
+.lab .ct-note p{margin:0;font-size:14.5px;line-height:1.55}
+
+/* selector de texto */
+.lab .ct-intro{margin:0 0 18px}
+.ct-tool>.lbl{margin:0 0 8px}
+.ct-pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;margin:0 0 6px}
+.ct-pk{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:var(--s1);min-width:0}
+.ct-pk:hover{border-color:var(--ink3)}
+.ct-pk[aria-checked="true"]{border-color:var(--lime-ink);box-shadow:inset 0 0 0 1px var(--lime-ink);background:var(--s3)}
+.ct-pk .n{font-weight:700;font-size:15px;line-height:1.2;color:var(--ink)}
+.ct-pk .d{font-size:13px;line-height:1.45;color:var(--ink2)}
+.ct-pk .k{font-family:var(--mono);font-size:12px;color:var(--ink3);margin-top:2px}
+.lab .ct-carga{margin:0 0 14px;max-width:none;min-height:1.6em}
+
+/* área de trabajo: el texto a la izquierda y el informe a la derecha en pantallas anchas */
+.ct-work{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start;margin-top:8px}
+@media (min-width:1080px){
+  .ct-work{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px}
+}
+/* La tarjeta del texto se queda fija junto al informe solo si cabe entera con el aviso más largo. Fija sin mirar el
+   alto, en un portátil de 1366×768 (658 px de ventana) el aviso de error o de «Verificando…» quedaba por debajo del
+   borde mientras durara el informe, y a 1280×600 se cortaba el propio botón: quien pulsaba no veía qué pasaba.
+   Medido con un ejemplo editado y el aviso de demasiadas_citas, el más largo: 768 px de tarjeta a 1366 de ancho y
+   828 a 1080, donde la columna es más estrecha; con top:72 y un margen, hacen falta 920 px de alto. El aviso de
+   «ocupado» (concurrencia 1) es ahora el más largo en español y se recortó para que quepa: medido el 20-10-2026 con
+   un ejemplo editado, 771 px a 1366 y 812 a 1080 (en inglés, 723 y 809), por debajo de los 832 que deja 920. Un aviso
+   nuevo más largo que ese tiene que medirse aquí o subir el umbral. El max-height es
+   la red para cuando el visitante agranda el área de texto: la tarjeta se desplaza por dentro en vez de esconder su
+   final, y cotejo.js (verEstado) baja ese desplazamiento hasta el aviso cuando cambia. */
+@media (min-width:1080px) and (min-height:920px){
+  .ct-in{position:sticky;top:72px;max-height:calc(100vh - 88px);overflow:auto}
+}
+.ct-in{display:grid;gap:10px}
+.ct-in-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 12px}
+.ct-cuenta{font-family:var(--mono);font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.ct-cuenta.is-over{color:var(--ct-bad);font-weight:600}
+/* 16 px: por debajo, Safari en iOS amplía la página al enfocar el área de texto */
+#ct-texto{display:block;width:100%;min-height:260px;resize:vertical;padding:12px 14px;border:1px solid var(--line2);border-radius:10px;background:var(--s2);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55}
+#ct-texto::placeholder{color:var(--ink3);opacity:1}
+#ct-texto:focus-visible{outline:2px solid var(--lime-ink);outline-offset:2px;border-radius:10px}
+#ct-texto.is-over{border-color:var(--ct-bad)}
+.lab .ct-priv{margin:0;max-width:none}
+.lab .ct-editado{margin:0;max-width:none;color:var(--ink2)}
+.ct-link{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;text-decoration-color:var(--ink3);text-underline-offset:3px}
+.ct-link:hover{text-decoration-color:var(--ink)}
+.ct-act{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.ct-act .lab-btn{padding:10px 15px;font-size:13px}
+.ct-act .lab-btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+.ct-act .note{line-height:1.45}
+.ct-estado{display:grid;gap:6px}
+.ct-estado p{margin:0;max-width:none;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+.ct-estado p:empty{display:none}
+.ct-estado.is-error p{color:var(--ink);border-left:3px solid var(--ct-bad);padding:2px 0 2px 12px}
+.ct-estado.is-info p{border-left:3px solid var(--ink3);padding:2px 0 2px 12px}
+.ct-estado p a{color:var(--ink)}
+.ct-reloj:empty{display:none}
+.ct-prog{height:3px;border-radius:2px;background:var(--line);overflow:hidden;position:relative}
+.ct-prog::after{content:"";position:absolute;inset:0 auto 0 0;width:32%;border-radius:2px;background:var(--lime-ink);animation:ct-ir 1.6s ease-in-out infinite}
+@keyframes ct-ir{from{transform:translateX(-100%)}to{transform:translateX(320%)}}
+/* sin animación (lab.css la quita con reduced-motion), la barra queda quieta y llena: sigue diciendo «trabajando» */
+@media (prefers-reduced-motion:reduce){.ct-prog::after{width:100%;opacity:.5}}
+
+/* informe */
+.ct-informe{min-width:0}
+.ct-informe[aria-busy="true"]{opacity:.6}
+.ct-inf{display:grid;gap:14px}
+.ct-inf-cab h3{margin:0 0 4px;font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;line-height:1.15}
+.ct-inf-cab h3:focus{outline:none}
+.ct-inf-cab h3:focus-visible{outline:2px solid var(--lime-ink);outline-offset:4px}
+.lab .ct-meta{margin:0;max-width:none;line-height:1.6}
+.lab .ct-aviso{margin:0;max-width:none;padding:10px 14px;border-radius:10px;border:1px solid var(--line2);background:var(--s2);font-size:14px;line-height:1.5;color:var(--ink)}
+.ct-aviso.is-warn{border-color:var(--ct-warn);background:linear-gradient(var(--ct-warn-bg),var(--ct-warn-bg)),var(--s2)}
+.ct-aviso.is-ok{border-color:var(--lime-ink)}
+.ct-vacio{padding:22px 16px;border:1px dashed var(--line2);border-radius:12px}
+.lab .ct-vacio p{margin:0;max-width:none}
+
+/* Seis estados: en 2, 3 o 6 columnas, nunca 5 + 1 (con auto-fit, «No verificable» quedaba sola en otra fila) */
+.ct-resumen{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+@media (min-width:560px){.ct-resumen{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:880px) and (max-width:1079px){.ct-resumen{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.ct-cifra{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--s1);min-width:0}
+.ct-cifra b{display:block;font-size:26px;line-height:1.1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ct-cifra span{display:block;font-family:var(--mono);font-size:11px;line-height:1.35;color:var(--ink2);margin-top:3px}
+.ct-cifra.is-no_existe b{color:var(--ct-bad)}
+.ct-cifra.is-con_observaciones b,.ct-cifra.is-no_encontrada b{color:var(--ct-warn)}
+.ct-cifra.is-verificada b{color:var(--ct-ok)}
+.ct-cifra.is-sin_confirmar b,.ct-cifra.is-no_verificable b{color:var(--ink2)}
+.ct-cifra.is-cero b,.ct-cifra.is-cero span{color:var(--ink3)}
+.ct-cifra.is-cero{background:none}
+
+.ct-grupo{display:grid;gap:10px}
+.lab .ct-grupo h4{margin:6px 0 0;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+
+.ct-h{background:var(--s1);border:1px solid var(--line);border-left:4px solid var(--ct-na);border-radius:12px;padding:14px 16px;min-width:0;overflow-wrap:anywhere}
+.ct-h.is-no_existe{border-left-color:var(--ct-bad)}
+.ct-h.is-con_observaciones,.ct-h.is-no_encontrada{border-left-color:var(--ct-warn)}
+.ct-h.is-verificada{border-left-color:var(--ct-ok)}
+.ct-cab{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.lab .ct-cab h5{margin:0;font-size:17px;line-height:1.25;letter-spacing:-.01em;font-weight:700}
+.ct-veces{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.ct-chip{display:inline-block;white-space:nowrap;padding:3px 8px;border-radius:999px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;line-height:1.4;background:var(--ct-na-bg);color:var(--ct-na)}
+.ct-chip.is-verificada{background:var(--ct-ok-bg);color:var(--ct-ok)}
+.ct-chip.is-con_observaciones,.ct-chip.is-no_encontrada{background:var(--ct-warn-bg);color:var(--ct-warn)}
+.ct-chip.is-no_existe{background:var(--ct-bad-bg);color:var(--ct-bad)}
+.lab .ct-datos{margin:6px 0 0;max-width:none;font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--ink2)}
+.ct-datos a{color:var(--ink);text-underline-offset:3px;text-decoration-color:var(--ink3)}
+.ct-datos a:hover{text-decoration-color:var(--ink)}
+.ct-datos .id{color:var(--ink);font-weight:500}
+.lab .ct-como{margin:4px 0 0;max-width:none;font-size:13px;color:var(--ink3)}
+.ct-obs{margin:10px 0 0;padding-left:18px;color:var(--ink2);font-size:14.5px;line-height:1.5}
+.ct-obs li{margin:3px 0}
+.ct-obs li.is-sug{color:var(--ink)}
+.ct-pas{margin:12px 0 0;display:grid;gap:4px}
+.ct-et{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);line-height:1.4}
+.ct-q{margin:0 0 6px;padding:6px 0 6px 14px;border-left:2px solid var(--line2);font-family:var(--serif);font-size:17px;line-height:1.5;color:var(--ct-quote)}
+.ct-q.is-real{border-left-color:var(--ct-ok)}
+/* La diferencia va en negrita y subrayada además de coloreada: tiene que leerse también sin color e impresa */
+.ct-q mark{background:var(--ct-mk-es);color:var(--ink);font-weight:700;padding:0 2px;border-radius:2px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.ct-q.is-real mark{background:var(--ct-mk-real)}
+
+/* leyenda de estados */
+.ct-leyenda{margin:22px 0 0;padding:0}
+.ct-leyenda summary{cursor:pointer;padding:14px 18px;font-weight:600;list-style-position:inside}
+.ct-leyenda summary:focus-visible{border-radius:16px}
+.ct-leyenda dl{margin:0;padding:0 18px 18px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:10px 16px;align-items:baseline}
+.ct-leyenda dd{margin:0;color:var(--ink2);font-size:14.5px;line-height:1.5}
+@media (max-width:560px){.ct-leyenda dl{grid-template-columns:minmax(0,1fr);gap:4px}.ct-leyenda dd{margin-bottom:10px}}
+
+/* qué comprueba */
+.ct-checks dl{margin:0;display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr);gap:14px 26px}
+.ct-checks dt{font-weight:700;color:var(--ink);line-height:1.4}
+.ct-checks dd{margin:0;color:var(--ink2);line-height:1.55}
+.ct-checks a{color:var(--ink);text-underline-offset:3px;text-decoration-color:var(--ink3)}
+@media (max-width:720px){.ct-checks dl{grid-template-columns:minmax(0,1fr);gap:4px}.ct-checks dd{margin-bottom:12px}.ct-checks dd:last-child{margin-bottom:0}}
+
+/* lo medido */
+.ct-meds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:14px}
+.ct-med{display:flex;flex-direction:column;gap:6px}
+.ct-med .read{margin:2px 0}
+.lab .ct-med p{margin:0;font-size:14.5px;line-height:1.55;max-width:none}
+.lab .ct-med p.note{margin-top:auto;padding-top:8px;font-size:11.5px;overflow-wrap:anywhere}
+
+.ct-no{margin:0;padding-left:20px;color:var(--ink2);max-width:800px;display:grid;gap:8px;line-height:1.55}
+.lab .ct-src{margin:48px 0 0;max-width:none}
+
+/* ---- solo tema claro ---- */
+html[data-theme="light"] .skip{box-shadow:inset 0 0 0 1px var(--lime-edge)}
+html[data-theme="light"] .ct-pk{border-color:var(--card-line);box-shadow:var(--card-shadow)}
+html[data-theme="light"] .ct-pk:hover{border-color:rgba(60,98,0,.35);background:#fcfdf9;box-shadow:var(--card-shadow-hover)}
+html[data-theme="light"] .ct-pk[aria-checked="true"]{border-color:var(--lime-ink);box-shadow:inset 0 0 0 1px var(--lime-ink),var(--card-shadow);background:linear-gradient(rgba(195,230,95,.18),rgba(195,230,95,.18)),var(--s1)}
+/* el área de texto en blanco sobre la tarjeta blanca necesita su borde: --s2 la separa del papel */
+html[data-theme="light"] #ct-texto{background:var(--s2);border-color:rgba(12,16,22,.16)}
+html[data-theme="light"] .ct-h{border-color:var(--card-line);box-shadow:var(--card-shadow)}
+html[data-theme="light"] .ct-h.is-no_existe{border-left-color:var(--ct-bad)}
+html[data-theme="light"] .ct-h.is-con_observaciones,html[data-theme="light"] .ct-h.is-no_encontrada{border-left-color:var(--ct-warn)}
+html[data-theme="light"] .ct-h.is-verificada{border-left-color:var(--ct-ok)}
+html[data-theme="light"] .ct-h.is-sin_confirmar,html[data-theme="light"] .ct-h.is-no_verificable{border-left-color:var(--ct-na)}
+html[data-theme="light"] .ct-cifra{border-color:var(--card-line)}
+html[data-theme="light"] .ct-cifra:not(.is-cero){box-shadow:var(--card-shadow)}
+html[data-theme="light"] .ct-aviso{background:var(--s1);border-color:var(--card-line)}
+html[data-theme="light"] .ct-aviso.is-warn{border-color:var(--ct-warn);background:linear-gradient(var(--ct-warn-bg),var(--ct-warn-bg)),var(--s1)}
+html[data-theme="light"] .ct-aviso.is-ok{border-color:var(--lime-edge)}
+/* etiquetas mono de color a 11-12 px: 500 en claro, como en las otras páginas del laboratorio */
+html[data-theme="light"] .ct-chip{font-weight:500}
+html[data-theme="light"] .ct-cuenta.is-over{font-weight:500}

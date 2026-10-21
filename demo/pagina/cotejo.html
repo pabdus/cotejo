@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es" data-lang="es" data-title-es="Cotejo: verifica las citas antes de radicar · Pablo Duque Marín" data-title-en="Cotejo: check the citations before you file · Pablo Duque Marín">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotejo: verifica las citas antes de radicar · Pablo Duque Marín</title>
+<meta name="description" content="Pega un escrito y Cotejo comprueba cada providencia de la Corte Constitucional y de la Corte Suprema de Justicia que cita contra las fuentes oficiales: si existe, si fue anulada, el ponente y los pasajes entre comillas, palabra por palabra.">
+<meta name="author" content="Pablo Alberto Duque Marín">
+<link rel="canonical" href="https://pabloduque.dev/lab/cotejo.html">
+<meta name="theme-color" content="#0b0d11">
+<meta name="color-scheme" content="dark light">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabloduque.dev/lab/cotejo.html">
+<meta property="og:title" content="Cotejo: verifica las citas antes de radicar · Pablo Duque Marín">
+<meta property="og:description" content="Un verificador de citas jurisprudenciales colombianas: existencia con dos fuentes, sentencias anuladas, ponente y pasajes palabra por palabra. Tres ejemplos con su informe, y tu propio texto en vivo.">
+<meta property="og:image" content="https://pabloduque.dev/og.png">
+<meta property="og:locale" content="es_CO">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/bricolage-grotesque-normal-300-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="stylesheet" href="/lab/lab.css">
+<link rel="stylesheet" href="/lab/cotejo.css">
+<script src="/theme.js"></script>
+<script src="/lab/lab.js" defer></script>
+<script src="/lab/cotejo.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main"><span data-l="es">Saltar al contenido</span><span data-l="en">Skip to content</span></a>
+<header class="lab-nav">
+  <div class="lab-nav-in">
+    <a class="lab-back" href="/#trabajo"><i aria-hidden="true">PD</i><span>← pabloduque.dev</span></a>
+    <div class="lab-act">
+      <button id="lab-lang" class="lab-lang" type="button" lang="en" aria-label="Switch to English"><span data-lang-opt="es" class="on">ES</span><span data-lang-opt="en">EN</span></button>
+      <button id="lab-theme" class="lab-btn" type="button" aria-label="Tema claro">☀</button>
+    </div>
+  </div>
+</header>
+
+<!-- data-api: la Function URL de la demo (salida `url` de infra/ en el repositorio de Cotejo), con la barra final.
+     La misma URL tiene que ir en connect-src de la CSP del sitio. Vacía, «Verificar en vivo» queda desactivado y la
+     página lo dice; los ejemplos funcionan igual. En localhost, ?api=http://127.0.0.1:8011/ apunta a demo/local.py. -->
+<main id="main" class="lab" data-api="">
+  <p class="kicker"><span data-l="es">Laboratorio · verificación de citas jurisprudenciales</span><span data-l="en">Lab · case-law citation checking</span></p>
+  <h1><span data-l="es">Cotejo: verifica las citas antes de radicar</span><span data-l="en">Cotejo: check the citations before you file</span></h1>
+  <p class="lede">
+    <span data-l="es">Pega un escrito —una tutela, una demanda, un recurso— y Cotejo busca en las fuentes oficiales cada providencia de la Corte Constitucional y de la Corte Suprema de Justicia que cita: comprueba que existe, que no fue anulada, que el ponente es el que consta y que lo que se le atribuye entre comillas lo dice de verdad, palabra por palabra.</span>
+    <span data-l="en">Paste a brief —a tutela claim, a lawsuit, an appeal— and Cotejo looks up, in the official sources, every ruling of Colombia’s Constitutional Court and Supreme Court of Justice that it cites: it checks that the ruling exists, that it was not annulled, that the reporting justice is the one on record and that what the brief puts in quotation marks is really in the ruling, word for word.</span>
+  </p>
+  <div class="ct-links">
+    <a class="lab-btn primary" href="#probar"><span data-l="es">Probarlo ↓</span><span data-l="en">Try it ↓</span></a>
+    <a class="lab-btn" href="/data/cotejo/ejemplos.json"><span data-l="es">Datos de esta página (JSON)</span><span data-l="en">This page’s data (JSON)</span></a>
+  </div>
+  <p class="note ct-why"><span data-l="es">Por qué existe: en febrero de 2026 la Corte Suprema sancionó por primera vez a un abogado colombiano por fundar un recurso en sentencias inventadas con IA (AC739-2026) y fijó un deber positivo de verificación. Las herramientas jurídicas con IA verifican sus propias respuestas; Cotejo verifica un escrito hecho en cualquier otro sitio.</span><span data-l="en">Why it exists: in February 2026 Colombia’s Supreme Court sanctioned a lawyer for the first time for basing an appeal on rulings invented with AI (AC739-2026), and set a positive duty to verify. Legal AI tools check their own answers; Cotejo checks a brief written anywhere else.</span></p>
+
+  <section class="card ct-notes" aria-labelledby="ct-notes-h">
+    <h2 id="ct-notes-h"><span data-l="es">Antes de pegar nada</span><span data-l="en">Before you paste anything</span></h2>
+    <div class="ct-note">
+      <b><span data-l="es">La regla de oro</span><span data-l="en">The golden rule</span></b>
+      <p><span data-l="es">Cotejo solo dice «no existe» cuando la providencia falta en dos fuentes: el índice oficial de la Corte Constitucional y su relatoría. Si una de las dos no responde —un fallo de red, un bloqueo—, el resultado es «sin confirmar», nunca «no existe». Y ni con las dos si puede ser muy reciente: el índice va con semanas de retraso y la relatoría tarda en publicar algunas, así que un número que la Corte pudo dictar después de lo que el índice recoge es «no encontrada». La Corte Suprema no tiene un índice abierto con el que hacer esa doble comprobación, y a su buscador le faltan providencias reales: allí una ausencia es «no encontrada», que pide comprobarla sin afirmar que no exista.</span><span data-l="en">Cotejo only says “does not exist” when a ruling is missing from two sources: the Constitutional Court’s official index and its case-law reporter. If either one does not answer —a network failure, a block— the result is “unconfirmed”, never “does not exist”. Not even with both if it may be very recent: the index runs weeks behind and the reporter is slow to publish some rulings, so a number the Court could have issued after what the index covers is “not found”. The Supreme Court has no open index for that double check, and its search engine is missing real rulings: there, an absence is “not found”, which asks you to check it without claiming that it does not exist.</span></p>
+    </div>
+    <div class="ct-note">
+      <b><span data-l="es">Límites de la demo</span><span data-l="en">Demo limits</span></b>
+      <p><span data-l="es">3 consultas al día por conexión (IP) y, entre todos los visitantes, como mucho 100 al día; hay además un presupuesto diario de peticiones a las dos Cortes, para no saturarlas, y si se acaba antes, la demo cierra sin llegar a las 100. Todo vuelve a medianoche, hora de Colombia. Se atiende una consulta a la vez: la que llega mientras otra persona verifica no entra ni gasta cupo, y hay que repetirla pasado un rato. Hasta 5.000 caracteres y 40 providencias distintas por texto, de las que se consultan como mucho 15. Cada consulta tiene un minuto: lo que no alcance a consultarse, por tiempo o por ese tope, sale «sin confirmar», con ese motivo. Lo que responde la Corte se guarda 30 días, y una ausencia, solo un día: una sentencia recién dictada puede tardar en subirse.</span><span data-l="en">3 checks a day per connection (IP) and at most 100 a day across all visitors; there is also a daily budget of requests to the two Courts, so as not to overload them, and if it runs out first, the demo closes before reaching 100. Everything resets at midnight, Colombia time. One check runs at a time: one that arrives while someone else is checking is turned away without using any quota, and has to be repeated a little later. Up to 5,000 characters and 40 different rulings per text, of which at most 15 are looked up. Each check gets one minute: whatever is not looked up, for lack of time or because of that cap, comes out “unconfirmed”, with that reason. What the Court returns is kept for 30 days, and an absence for one day only: a ruling handed down last week may not be online yet.</span></p>
+    </div>
+    <div class="ct-note">
+      <b><span data-l="es">Tu texto</span><span data-l="en">Your text</span></b>
+      <p><span data-l="es">Viaja cifrado a un servidor en AWS, se procesa en memoria y no se guarda en ningún sitio: los registros llevan conteos y tiempos, nunca texto ni IP. Para el límite diario se guarda solo un hash de la IP con sal secreta y con la fecha, que caduca en 2 días y no permite enlazar un día con otro. A la Corte solo le llegan los números de las providencias. Aun así, no pegues datos de un cliente: basta el fragmento que tiene las citas.</span><span data-l="en">It travels encrypted to a server on AWS, is processed in memory and is not stored anywhere: the logs hold counts and timings, never text or IP addresses. For the daily limit only a salted hash of the IP, keyed with the date, is kept; it expires in 2 days and cannot link one day to another. The Court only receives the numbers of the rulings. Even so, do not paste a client’s data: the passage with the citations is enough.</span></p>
+    </div>
+    <div class="ct-note">
+      <b><span data-l="es">Cortesía con la Corte</span><span data-l="en">Courtesy towards the Court</span></b>
+      <p><span data-l="es">Cotejo espera entre peticiones (1,5 s en la relatoría, 1 s en la Corte Suprema) y, si un servidor falla tres veces seguidas, deja de insistirle durante 15 minutos. Nació así después de que el sitio de la Corte Constitucional dejara de responder tras una tarde de evaluación. Por eso una consulta puede tardar hasta un minuto, y por eso la demo atiende una sola a la vez: con dos a la vez, la Corte recibiría el doble de peticiones por segundo.</span><span data-l="en">Cotejo waits between requests (1.5 s at the reporter, 1 s at the Supreme Court) and, if a server fails three times in a row, stops trying it for 15 minutes. It was built that way after the Constitutional Court’s site stopped answering following an afternoon of evaluation runs. That is why a check can take up to a minute, and why the demo runs only one at a time: with two at once, the Court would get twice as many requests per second.</span></p>
+    </div>
+  </section>
+
+  <section class="ct-tool" id="probar" aria-labelledby="ct-tool-h">
+    <h2 id="ct-tool-h"><span data-l="es">Pruébalo</span><span data-l="en">Try it</span></h2>
+    <p class="ct-intro"><span data-l="es">Tres escritos de ejemplo con su informe ya guardado, que se ve al instante, o tu propio texto. «Verificar en vivo» consulta las fuentes ahora y gasta una consulta.</span><span data-l="en">Three sample briefs with a saved report you see at once, or your own text. “Check live” queries the sources now and uses one check.</span></p>
+
+    <div class="lbl" id="ct-pick-lbl"><span data-l="es">Texto</span><span data-l="en">Text</span></div>
+    <div class="ct-pick" id="ct-pick" role="radiogroup" aria-labelledby="ct-pick-lbl">
+      <button type="button" class="ct-pk" role="radio" aria-checked="false" tabindex="-1" data-ej="propio">
+        <span class="n"><span data-l="es">Tu texto</span><span data-l="en">Your text</span></span>
+        <span class="d"><span data-l="es">Pega un escrito, o solo el fragmento con las citas.</span><span data-l="en">Paste a brief, or just the passage with the citations.</span></span>
+      </button>
+    </div>
+    <p class="note ct-carga" id="ct-carga"><span data-l="es">Cargando los ejemplos…</span><span data-l="en">Loading the samples…</span></p>
+
+    <div class="ct-work">
+      <div class="card ct-in">
+        <div class="ct-in-top">
+          <label class="lbl" for="ct-texto"><span data-l="es">Escrito</span><span data-l="en">Brief</span></label>
+          <span class="ct-cuenta" id="ct-cuenta"></span>
+        </div>
+        <!-- Sin maxlength a propósito: al pegar, cortaría el texto en silencio y podría dejar fuera justo una cita -->
+        <textarea id="ct-texto" rows="14" spellcheck="false" autocomplete="off" aria-describedby="ct-cuenta ct-priv" data-ph-es="Pega aquí el escrito. Por ejemplo: En la Sentencia T-406 de 1992 (M.P. Ciro Angarita Barón) la Corte sostuvo: “…”" data-ph-en="Paste the brief here. For example: En la Sentencia T-406 de 1992 (M.P. Ciro Angarita Barón) la Corte sostuvo: “…”"></textarea>
+        <!-- Un ejemplo editado se queda en su propia ranura (no pisa «Tu texto»); esto es lo único que lo devuelve a su texto -->
+        <p class="note ct-editado" id="ct-editado" hidden><span data-l="es">Editaste el texto de este ejemplo.</span><span data-l="en">You edited this sample’s text.</span> <button type="button" class="ct-link" id="ct-restaurar"><span data-l="es">Volver al original</span><span data-l="en">Restore the original</span></button></p>
+        <p class="note ct-priv" id="ct-priv"><span data-l="es">El texto viaja a un servidor en AWS, se procesa en memoria y no se guarda. Cotejo lee escritos en español, como los ejemplos.</span><span data-l="en">The text travels to a server on AWS, is processed in memory and is not stored. Cotejo reads briefs written in Spanish, like the samples.</span></p>
+        <div class="ct-act">
+          <button type="button" class="lab-btn primary" id="ct-verificar" aria-describedby="ct-cupo"><span data-l="es">Verificar en vivo</span><span data-l="en">Check live</span></button>
+          <span class="note" id="ct-cupo"></span>
+        </div>
+        <div class="ct-estado" id="ct-estado-caja">
+          <div class="ct-prog" id="ct-prog" hidden></div>
+          <p id="ct-estado" role="status"></p>
+          <span class="note ct-reloj" id="ct-reloj" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="ct-informe" id="ct-informe"></div>
+    </div>
+    <p class="ct-sr" id="ct-live" aria-live="polite"></p>
+
+    <details class="card ct-leyenda">
+      <summary><span data-l="es">Qué significa cada estado</span><span data-l="en">What each status means</span></summary>
+      <dl>
+        <dt><span class="ct-chip is-verificada"><span data-l="es">Verificada</span><span data-l="en">Verified</span></span></dt>
+        <dd><span data-l="es">Existe, y lo que se comprobó coincide: el ponente citado y los pasajes entre comillas.</span><span data-l="en">It exists, and what was checked matches: the cited reporting justice and the quoted passages.</span></dd>
+        <dt><span class="ct-chip is-con_observaciones"><span data-l="es">Con observaciones</span><span data-l="en">With observations</span></span></dt>
+        <dd><span data-l="es">Existe, pero algo no cuadra: un pasaje que no dice eso, otro ponente, o la sentencia fue anulada.</span><span data-l="en">It exists, but something is off: a passage that does not say that, a different reporting justice, or the ruling was annulled.</span></dd>
+        <dt><span class="ct-chip is-no_existe"><span data-l="es">No existe</span><span data-l="en">Does not exist</span></span></dt>
+        <dd><span data-l="es">No está en el índice oficial de la Corte Constitucional ni en su relatoría. Solo se dice con las dos fuentes.</span><span data-l="en">It is neither in the Constitutional Court’s official index nor in its reporter. It is only said with both sources.</span></dd>
+        <dt><span class="ct-chip is-no_encontrada"><span data-l="es">No encontrada</span><span data-l="en">Not found</span></span></dt>
+        <dd><span data-l="es">No aparece en el buscador de la Corte Suprema, que no las tiene todas; o es una sentencia de la Constitucional tan reciente que puede no estar publicada aún en ninguna de sus dos fuentes. Hay que comprobarla antes de radicar.</span><span data-l="en">It does not show up in the Supreme Court’s search engine, which does not have them all; or it is a Constitutional Court ruling so recent that it may not be published in either of its two sources yet. Check it before filing.</span></dd>
+        <dt><span class="ct-chip is-sin_confirmar"><span data-l="es">Sin confirmar</span><span data-l="en">Unconfirmed</span></span></dt>
+        <dd><span data-l="es">Una fuente no respondió, o la consulta llegó a su minuto o a su tope de 15 providencias. No se afirma nada; el motivo lo dice.</span><span data-l="en">A source did not answer, or the check hit its one-minute limit or its cap of 15 rulings. Nothing is claimed; the reason says why.</span></dd>
+        <dt><span class="ct-chip is-no_verificable"><span data-l="es">No verificable</span><span data-l="en">Not verifiable</span></span></dt>
+        <dd><span data-l="es">Una cita que esta versión detecta pero aún no comprueba: Consejo de Estado, autos de la Constitucional, radicados, citas por fecha. Se lista para que nadie crea que se revisó.</span><span data-l="en">A citation this version detects but does not check yet: Council of State, Constitutional Court orders, case numbers, citations by date. It is listed so nobody thinks it was checked.</span></dd>
+      </dl>
+    </details>
+    <noscript><p class="note"><span data-l="es">Esta página necesita JavaScript para verificar y dibujar los informes. Los ejemplos están en /data/cotejo/ejemplos.json.</span><span data-l="en">This page needs JavaScript to check texts and draw the reports. The samples are at /data/cotejo/ejemplos.json.</span></p></noscript>
+  </section>
+
+  <section aria-labelledby="ct-que-h">
+    <h2 id="ct-que-h"><span data-l="es">Qué comprueba, y contra qué</span><span data-l="en">What it checks, and against what</span></h2>
+    <div class="card ct-checks">
+      <dl>
+        <dt><span data-l="es">Existencia · Corte Constitucional</span><span data-l="en">Existence · Constitutional Court</span></dt>
+        <dd><span data-l="es">Contra el <a href="https://www.datos.gov.co/d/v2k4-2t8s" target="_blank" rel="noopener">índice de providencias en datos abiertos</a><span class="ct-idx" data-idx="es"></span> y, si falta ahí, contra la <a href="https://www.corteconstitucional.gov.co/relatoria/" target="_blank" rel="noopener">relatoría</a>, que tiene el texto completo. Solo se declara inexistente lo que falta en las dos.</span><span data-l="en">Against the <a href="https://www.datos.gov.co/d/v2k4-2t8s" target="_blank" rel="noopener">open-data index of rulings</a><span class="ct-idx" data-idx="en"></span> and, if it is missing there, against the <a href="https://www.corteconstitucional.gov.co/relatoria/" target="_blank" rel="noopener">reporter</a>, which has the full text. Only what is missing from both is declared non-existent.</span></dd>
+        <dt><span data-l="es">Existencia · Corte Suprema</span><span data-l="en">Existence · Supreme Court</span></dt>
+        <dd><span data-l="es">Contra su <a href="https://consultaprovidencias.cortesuprema.gov.co/" target="_blank" rel="noopener">buscador de providencias</a> (SC, AC, SL, AL, SP, AP, STC, STL, STP…). Lo que no aparece ahí se marca «no encontrada», nunca «no existe».</span><span data-l="en">Against its <a href="https://consultaprovidencias.cortesuprema.gov.co/" target="_blank" rel="noopener">rulings search engine</a> (SC, AC, SL, AL, SP, AP, STC, STL, STP…). What does not show up there is marked “not found”, never “does not exist”.</span></dd>
+        <dt><span data-l="es">Sentencias anuladas</span><span data-l="en">Annulled rulings</span></dt>
+        <dd><span data-l="es">El índice oficial las sigue listando; la relatoría sustituye su página por una nota. Cotejo lee esa nota y lo avisa: así salió a la luz que la SU-163/23 había sido anulada.</span><span data-l="en">The official index still lists them; the reporter replaces their page with a note. Cotejo reads that note and flags it: that is how it came out that SU-163/23 had been annulled.</span></dd>
+        <dt><span data-l="es">Ponente</span><span data-l="en">Reporting justice</span></dt>
+        <dd><span data-l="es">Contra el registrado. Admite que el escrito abrevie el nombre; no admite un apellido que no está. Con dos ponentes, compara con cada uno por separado.</span><span data-l="en">Against the one on record. It accepts a shortened name; it does not accept a surname that is not there. With two reporting justices, it compares with each one separately.</span></dd>
+        <dt><span data-l="es">Pasajes entre comillas</span><span data-l="en">Quoted passages</span></dt>
+        <dd><span data-l="es">Contra el texto completo de la providencia, palabra por palabra. Tolera tildes, mayúsculas, puntuación, elisiones «(...)» e inserciones «[la Corte]»; no tolera que cambie una palabra. Comparar por parecido de caracteres daba por buena una cita en la que «también es» se había cambiado por «no es».</span><span data-l="en">Against the full text of the ruling, word for word. It tolerates accents, case, punctuation, ellipses “(...)” and insertions “[la Corte]”; it does not tolerate a single changed word. Comparing by character similarity used to pass a quote in which «también es» (is also) had been changed to «no es» (is not).</span></dd>
+        <dt><span data-l="es">Confusión de año</span><span data-l="en">Wrong year</span></dt>
+        <dd><span data-l="es">Si la T-760 de 2009 no existiera pero sí la de 2008, lo sugiere: «¿quizá quería citar…?».</span><span data-l="en">If T-760 of 2009 did not exist but the 2008 one did, it suggests it: “did you mean…?”.</span></dd>
+      </dl>
+    </div>
+  </section>
+
+  <section aria-labelledby="ct-med-h">
+    <h2 id="ct-med-h"><span data-l="es">Lo medido</span><span data-l="en">What was measured</span></h2>
+    <p><span data-l="es">Con etiquetas conocidas de antemano, sobre muestras independientes. Cada cifra lleva el archivo de resultados del repositorio de Cotejo del que sale.</span><span data-l="en">With labels known in advance, on independent samples. Each figure names the results file in the Cotejo repository it comes from.</span></p>
+    <div class="ct-meds">
+      <div class="card ct-med">
+        <div class="lbl"><span data-l="es">Reales dadas por inexistentes</span><span data-l="en">Real rulings called non-existent</span></div>
+        <div class="read good"><span data-l="es">0 de 500</span><span data-l="en">0 of 500</span></div>
+        <p><span data-l="es">sentencias reales de la Corte Constitucional, al azar del índice y escritas en siete formas distintas, en dos muestras (300 y 200).</span><span data-l="en">real Constitutional Court rulings, drawn at random from the index and written in seven different forms, in two samples (300 and 200).</span></p>
+        <p class="note">evaluacion/resultado_banco.txt · resultado_banco_semilla99.txt</p>
+      </div>
+      <div class="card ct-med">
+        <div class="lbl"><span data-l="es">Inventadas detectadas</span><span data-l="en">Invented rulings caught</span></div>
+        <div class="read good"><span data-l="es">499 de 499</span><span data-l="en">499 of 499</span></div>
+        <p><span data-l="es">sentencias inventadas, pero plausibles, en esas mismas muestras. Una de las «inventadas», la T-281/26, resultó real: la relatoría ya la tenía y el índice oficial todavía no. Para eso está la segunda fuente.</span><span data-l="en">invented but plausible rulings, in those same samples. One of the “invented” ones, T-281/26, turned out to be real: the reporter already had it and the official index did not yet. That is what the second source is for.</span></p>
+        <p class="note">evaluacion/resultado_banco.txt · resultado_banco_semilla99.txt</p>
+      </div>
+      <div class="card ct-med">
+        <!-- El 0 es lo que cuenta banco.py: alteraciones que salieron «coincide». Un pasaje que no se llegó a comparar
+             (sin_pasaje) no entra en esa cuenta, y en un informe su cita habría salido «verificada»: por eso se dice aparte.
+             Los 18 son la columna sin_pasaje de resultado_banco.txt; los 2, la de resultado_banco_su_semilla31.txt. -->
+        <div class="lbl"><span data-l="es">Pasajes alterados que salieron «coincide»</span><span data-l="en">Altered passages marked as matching</span></div>
+        <div class="read good">0</div>
+        <p><span data-l="es">en dos muestras de 60 sentencias con ocho variantes de cada frase (un «no» insertado, una palabra cambiada, una omitida…) y en una tercera de 60 sentencias de unificación. Lo que no se llegó a comparar se cuenta aparte: en la primera pasada, 18 de los 480 pasajes tenían una comilla de más y se saltaron sin aviso, y un informe habría dado esas citas por verificadas. Está corregido y tiene prueba, y la segunda muestra no tuvo ninguno; en la de unificación quedaron 2, frases barajadas que arrastraban una comilla.</span><span data-l="en">in two samples of 60 rulings with eight variants of each sentence (an inserted «no», a changed word, a dropped one…) and in a third one of 60 unification rulings. What was never compared is counted separately: in the first run, 18 of the 480 passages had an extra quotation mark and were skipped without warning, and a report would have passed those citations as verified. It is fixed and has a test, and the second sample had none; the unification sample still had 2, shuffled sentences that carried a quotation mark along.</span></p>
+        <p class="note">README «Lo medido» · resultado_banco.txt · resultado_banco_semilla99.txt · resultado_banco_su_semilla31.txt</p>
+      </div>
+      <div class="card ct-med">
+        <div class="lbl"><span data-l="es">Escritos de un modelo de lenguaje</span><span data-l="en">Briefs written by a language model</span></div>
+        <div class="read bad"><span data-l="es">58 de 68</span><span data-l="en">58 of 68</span></div>
+        <p><span data-l="es">citas de la Corte Constitucional que no existen, en 15 fundamentos jurídicos de tutela redactados por qwen3.5:9b, en local. De los 7 pasajes entre comillas atribuidos a sentencias que sí existen, ninguno aparece en ellas. Las 58 se auditaron a mano. Es un modelo pequeño: falta repetirlo con modelos grandes.</span><span data-l="en">Constitutional Court citations that do not exist, in 15 tutela legal-grounds sections written by qwen3.5:9b, run locally. Of the 7 quoted passages attributed to rulings that do exist, none appears in them. All 58 were audited by hand. It is a small model: this still has to be repeated with large ones.</span></p>
+        <p class="note">evaluacion/resultado_escritos_llm.txt</p>
+      </div>
+      <div class="card ct-med">
+        <div class="lbl"><span data-l="es">Lo que no tiene el buscador de la Corte Suprema</span><span data-l="en">What the Supreme Court search engine lacks</span></div>
+        <div class="read"><span data-l="es">6 de 135</span><span data-l="en">6 of 135</span></div>
+        <p><span data-l="es">providencias reales, citadas por la propia Corte en sus providencias, que su buscador no encuentra (4,4 %), en dos muestras; todas autos o tutelas. Por eso allí una ausencia es «no encontrada» y no «no existe»: si no, se acusaría en falso a uno de cada veinte escritos correctos.</span><span data-l="en">real rulings, cited by the Court itself in its own rulings, that its search engine does not find (4.4%), in two samples; all of them orders or tutela decisions. That is why an absence there is “not found” and not “does not exist”: otherwise one in twenty correct briefs would be falsely accused.</span></p>
+        <p class="note">evaluacion/resultado_banco_csj_semilla7.txt · resultado_banco_csj_semilla11.txt</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ct-no-h">
+    <h2 id="ct-no-h"><span data-l="es">Lo que no hace</span><span data-l="en">What it does not do</span></h2>
+    <ul class="ct-no">
+      <li><span data-l="es">No comprueba el sentido de una paráfrasis. «La Corte sostuvo que…» sin comillas: comprueba que la sentencia existe y su ponente, no que diga eso.</span><span data-l="en">It does not check the meaning of a paraphrase. “The Court held that…” without quotation marks: it checks that the ruling exists and its reporting justice, not that it says that.</span></li>
+      <li><span data-l="es">No verifica lo que no está publicado en abierto, ni todavía el Consejo de Estado, los autos de la Constitucional, los radicados o las citas por fecha («CSJ SC, 12 dic. 2017»). Esas citas se detectan y se listan como «no verificable», con el motivo.</span><span data-l="en">It does not verify what is not openly published, nor yet the Council of State, Constitutional Court orders, case numbers or citations by date («CSJ SC, 12 dic. 2017»). Those citations are detected and listed as “not verifiable”, with the reason.</span></li>
+      <li><span data-l="es">No sustituye la lectura de las providencias por parte de quien firma el escrito: ayuda a cumplir el deber de verificación.</span><span data-l="en">It does not replace reading the rulings by whoever signs the brief: it helps meet the duty to verify.</span></li>
+    </ul>
+  </section>
+
+  <p class="note ct-src" id="ct-src"><span data-l="es">Ejemplos: /data/cotejo/ejemplos.json, exportado del repositorio de Cotejo.</span><span data-l="en">Samples: /data/cotejo/ejemplos.json, exported from the Cotejo repository.</span></p>
+
+  <footer class="foot">
+    <span>© 2026 Pablo Alberto Duque Marín · <span data-l="es">Cotejo no es asesoría jurídica.</span><span data-l="en">Cotejo is not legal advice.</span></span>
+    <a href="/#trabajo">← pabloduque.dev</a>
+  </footer>
+</main>
+</body>
+</html>
